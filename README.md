@@ -18,8 +18,13 @@ A demo usage of the gym environment is in gym_simulator/gym_runner.py and can be
 The demo takes input by keyboard input followed by an enter
 
 q = quit
+
 w = up
+
 a = left
+
 s = down
+
 d = right
+
 other = stay
