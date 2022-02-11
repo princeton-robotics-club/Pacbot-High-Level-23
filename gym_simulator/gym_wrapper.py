@@ -68,6 +68,7 @@ class PacBotEnv(gym.Env):
 
         self.prev_reward = 0
         self.prev_done = False
+        self.num_lives = self.game_state.lives
 
     def _get_state(self):
         game_state = self.game_state
@@ -124,9 +125,13 @@ class PacBotEnv(gym.Env):
         self.running_score = 0
         self.prev_reward = 0
         self.prev_done = False
+        self.num_lives = self.game_state.lives
         return self._get_state()
 
     def step(self, action):
+        if self.prev_done:
+            self.reset()
+
         game_state = self.game_state
 
         for i in range(self.next_step_rate):
@@ -159,6 +164,9 @@ class PacBotEnv(gym.Env):
 
         reward = game_state.score - self.running_score
         self.running_score = game_state.score
+        if self.num_lives != game_state.lives:
+            reward = -100
+            self.num_lives = game_state.lives
 
         done = game_state.game_over
         if done:
