@@ -1,4 +1,4 @@
-from variables import *
+from .variables import *
 
 # These start paths defines the paths the ghosts take at the beginning of a new round.
 # Pink immedaitely leaves the respawn zone, while blue and orange remain it it for 

@@ -1,4 +1,4 @@
-from gym_wrapper import PacBotEnv
+from .gym_wrapper import PacBotEnv
 
 if __name__ == "__main__":
     env = PacBotEnv(speed=1)

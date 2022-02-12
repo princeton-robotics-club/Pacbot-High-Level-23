@@ -2,9 +2,9 @@ import numpy as np
 import gym
 from gym import spaces 
 
-from gameState import GameState
-from grid import grid
-from variables import *
+from .gameState import GameState
+from .grid import grid
+from .variables import *
 
 """
 game state is [
@@ -176,7 +176,7 @@ class PacBotEnv(gym.Env):
         self.prev_done = done
 
         # return state, reward, done, info
-        return self._get_state(), reward, done, None
+        return self._get_state(), reward, done, {}
 
     def render(self, mode='console'):
         if mode != 'console':
@@ -232,3 +232,41 @@ class PacBotEnv(gym.Env):
     
     def close(self):
         self.game_state = None
+
+    @classmethod
+    def get_grid_from_state(cls, state):
+
+        STATE_VALUES = cls.STATE_VALUES
+        
+        pacbot = "a"
+        r_ghost = "r"
+        p_ghost = "p"
+        o_ghost = "o"
+        b_ghost = "b"
+        wall = "#"
+        pellet = "-"
+        power_pellet = "%"
+
+        grid = np.zeros((cls.GRID_HEIGHT, cls.GRID_WIDTH), dtype=str)
+        grid[:, :] = ' '
+
+        # fill in grid
+        grid[cls.WALL_LOCATIONS != 0] = wall
+
+        pellet_exists = state[np.array(STATE_VALUES) == "pellet"]
+        for i in range(len(pellet_exists)):
+            if pellet_exists[i]:
+                grid[cls.PELLET_LOCATIONS == i+1] = pellet
+
+        power_pellet_exists = state[np.array(STATE_VALUES) == "power_pellet"]
+        for i in range(len(power_pellet_exists)):
+            if power_pellet_exists[i]:
+                grid[cls.POWER_PELLET_LOCATIONS == i+1] = power_pellet
+
+        grid[int(state[STATE_VALUES.index("pac_x")]), int(state[STATE_VALUES.index("pac_y")])] = pacbot 
+        grid[int(state[STATE_VALUES.index("r_x")]), int(state[STATE_VALUES.index("r_y")])] = r_ghost 
+        grid[int(state[STATE_VALUES.index("p_x")]), int(state[STATE_VALUES.index("p_y")])] = p_ghost 
+        grid[int(state[STATE_VALUES.index("o_x")]), int(state[STATE_VALUES.index("o_y")])] = o_ghost 
+        grid[int(state[STATE_VALUES.index("b_x")]), int(state[STATE_VALUES.index("b_y")])] = b_ghost 
+
+        return grid

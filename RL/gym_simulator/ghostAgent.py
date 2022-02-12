@@ -1,5 +1,5 @@
-from ghostpaths import *
-from variables import *
+from .ghostpaths import *
+from .variables import *
 import random
 import math
 

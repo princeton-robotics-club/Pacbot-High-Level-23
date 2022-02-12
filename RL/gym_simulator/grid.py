@@ -1,4 +1,4 @@
-from variables import *
+from .variables import *
 
 # Grid enums
 # o = normal pellet, e = empty space, O = power pellet, c = cherry position

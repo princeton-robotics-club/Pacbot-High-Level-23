@@ -1,6 +1,6 @@
-from variables import *
-from pacmanState_pb2 import PacmanState
-from lightState_pb2 import LightState
+from .variables import *
+from .pacmanState_pb2 import PacmanState
+from .lightState_pb2 import LightState
 import time
 
 class StateConverter:
