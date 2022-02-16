@@ -4,10 +4,14 @@ from stable_baselines3.common.env_util import make_vec_env
 
 from gym_simulator.gym_wrapper import PacBotEnv
 
+import sys
+
 if __name__ == "__main__":
+    assert len(sys.argv) == 2, "must supply algorithm argument (either DQN or PPO)"
+    
     SPEED = 1
     NUM_ENVS = 16
-    ALGORITHM = "DQN"
+    ALGORITHM = sys.argv[1]
     assert ALGORITHM in ["DQN", "PPO"], "ALGORITHM must be either DQN or PPO"
     TOTAL_TIMESTEPS = 10000000
     STEPS_PER_CHECKPOINT = max(100000 // NUM_ENVS, 1)

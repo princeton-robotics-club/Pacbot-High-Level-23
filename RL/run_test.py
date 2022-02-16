@@ -1,6 +1,8 @@
 from stable_baselines3 import PPO
 from gym_simulator.gym_wrapper import PacBotEnv
 
+import sys
+
 import time
 
 def print_state(state):
@@ -11,7 +13,9 @@ def print_state(state):
         print()
 
 if __name__ == "__main__":
-    ALGORITHM = "DQN"
+    assert len(sys.argv) == 2, "must supply algorithm argument (either DQN or PPO)"
+    
+    ALGORITHM = sys.argv[1]
     assert ALGORITHM in ["DQN", "PPO"], "ALGORITHM must be either DQN or PPO"
     FINAL_MODEL_NAME = ALGORITHM + "_final_model"
 
