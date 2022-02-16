@@ -11,7 +11,9 @@ def print_state(state):
         print()
 
 if __name__ == "__main__":
-    FINAL_MODEL_NAME = "final_model"
+    ALGORITHM = "DQN"
+    assert ALGORITHM in ["DQN", "PPO"], "ALGORITHM must be either DQN or PPO"
+    FINAL_MODEL_NAME = ALGORITHM + "_final_model"
 
     model = PPO.load(FINAL_MODEL_NAME)
 
