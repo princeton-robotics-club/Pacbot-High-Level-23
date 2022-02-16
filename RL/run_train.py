@@ -1,35 +1,27 @@
 from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.env_util import make_vec_env
 
 from gym_simulator.gym_wrapper import PacBotEnv
 
-import time
-
-def print_state(state):
-    grid = PacBotEnv.get_grid_from_state(state)
-    for row in grid:
-        for cell in row:
-            print(cell, end='')
-        print()
-
 if __name__ == "__main__":
-    env = PacBotEnv(speed=1)
-    # wrap env
-    env = make_vec_env(lambda: env, n_envs=4)
+    SPEED = 1
+    NUM_ENVS = 16
+    TOTAL_TIMESTEPS = 10000000
+    STEPS_PER_CHECKPOINT = max(100000 // NUM_ENVS, 1)
+    FINAL_MODEL_NAME = "final_model"
 
-    model = PPO('MlpPolicy', env, verbose=0)
-    model.learn(total_timesteps=10)
+    env = PacBotEnv(speed=SPEED)
+    envs = make_vec_env(lambda: env, n_envs=NUM_ENVS) # vectorized env
 
-    # model.save("model")
-    # model = PPO.load("model")
+    try:
+        model = PPO.load(FINAL_MODEL_NAME, envs)
+    except Exception as e:
+        print(str(e))
+        print("learning from scratch")
+        model = PPO('MlpPolicy', envs, verbose=0, tensorboard_log="logs")
 
-    # testing
-    obs = env.reset()
-    print_state(obs[0])
-    print()
-    while True:
-        action, _states = model.predict(obs)
-        obs, rewards, dones, info = env.step(action)
-        print_state(obs[0])
-        print()
-        time.sleep(1)
+    checkpoint_callback = CheckpointCallback(save_freq=STEPS_PER_CHECKPOINT, save_path="checkpoints", name_prefix="mlp")
+
+    model.learn(total_timesteps=TOTAL_TIMESTEPS, callback=checkpoint_callback)
+    model.save(FINAL_MODEL_NAME)
