@@ -1,4 +1,4 @@
-from stable_baselines3 import PPO
+from stable_baselines3 import DQN, PPO
 from gym_simulator.gym_wrapper import PacBotEnv
 
 import sys
@@ -19,7 +19,13 @@ if __name__ == "__main__":
     assert ALGORITHM in ["DQN", "PPO"], "ALGORITHM must be either DQN or PPO"
     FINAL_MODEL_NAME = ALGORITHM + "_final_model"
 
-    model = PPO.load(FINAL_MODEL_NAME)
+    try:
+        if ALGORITHM == "DQN":
+            model = DQN.load(FINAL_MODEL_NAME)
+        elif ALGORITHM == "PPO":
+            model = PPO.load(FINAL_MODEL_NAME)
+    except Exception as e:
+        print(str(e))
 
     # testing
     env = PacBotEnv(speed=1)
