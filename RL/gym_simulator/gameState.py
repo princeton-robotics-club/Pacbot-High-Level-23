@@ -109,8 +109,8 @@ class GameState:
 
     def _end_game(self):
         self.play = False
-        print("Sore: " + str(self.score))
-        print("Time: " + str(self.elapsed_time))
+        #print("Sore: " + str(self.score))
+        #print("Time: " + str(self.elapsed_time))
 
         self.game_over = True
 
@@ -183,7 +183,7 @@ class GameState:
         ret = ""
         for ghost in ghosts:
             ret += str(ghost.pos["current"])+" "
-        print(ret)
+        #print(ret)
 
     def next_step(self):
         if self._is_game_over():

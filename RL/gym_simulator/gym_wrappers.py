@@ -24,7 +24,7 @@ class PacBotEnv(gym.Env):
     DEATH_REWARD = -50
     LOSE_REWARD = -50
     WIN_REWARD = 100
-    STEP_REWARD = -1
+    STEP_REWARD = -0.1
 
     UP = 0
     LEFT = 1
@@ -282,6 +282,10 @@ class PacBotEnv(gym.Env):
         return grid
 
 class VisualPacBotEnv(PacBotEnv):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(12, self.GRID_HEIGHT, self.GRID_WIDTH), dtype=np.float32)
+
     """ 
     returns 12xgrid (
         pacman, 
