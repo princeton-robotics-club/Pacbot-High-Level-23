@@ -2,7 +2,7 @@ from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.env_util import make_vec_env
 
-from gym_simulator.gym_wrapper import PacBotEnv
+from gym_simulator.gym_wrappers import PacBotEnv
 
 import sys
 

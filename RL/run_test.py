@@ -1,5 +1,5 @@
 from stable_baselines3 import DQN, PPO
-from gym_simulator.gym_wrapper import PacBotEnv
+from gym_simulator.gym_wrappers import PacBotEnv
 
 import sys
 
