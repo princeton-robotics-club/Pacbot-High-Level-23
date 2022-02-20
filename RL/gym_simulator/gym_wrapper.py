@@ -21,6 +21,8 @@ game state is [
 class PacBotEnv(gym.Env):
     metadata = {"render.modes": ["console"]}
 
+    DEATH_REWARD = -50
+
     UP = 0
     LEFT = 1
     STAY = 2
@@ -53,7 +55,7 @@ class PacBotEnv(gym.Env):
     STATE_VALUES.extend(["power_pellet" for i in range(NUM_POWER_PELLETS)])
     STATE_SHAPE = np.shape(STATE_VALUES)
     STATE_VALUE_MIN = 0
-    STATE_VALUE_MAX = 30
+    STATE_VALUE_MAX = 40
     
     def __init__(self, speed=1):
         super(PacBotEnv, self).__init__()
@@ -61,11 +63,11 @@ class PacBotEnv(gym.Env):
         self.action_space = spaces.Discrete(self.NUM_ACTIONS)
         self.observation_space = spaces.Box(low=self.STATE_VALUE_MIN, high=self.STATE_VALUE_MAX, shape=self.STATE_SHAPE, dtype=np.float32)
 
-        self.next_step_rate = int(speed*(ticks_per_update / 2))
+        self.next_step_rate = int(speed*ticks_per_update)
 
         self.game_state = GameState()
-        self.running_score = 0
 
+        self.running_score = 0
         self.prev_reward = 0
         self.prev_done = False
         self.num_lives = self.game_state.lives
@@ -165,12 +167,10 @@ class PacBotEnv(gym.Env):
         reward = game_state.score - self.running_score
         self.running_score = game_state.score
         if self.num_lives != game_state.lives:
-            reward = -100
+            reward = self.DEATH_REWARD
             self.num_lives = game_state.lives
 
         done = game_state.game_over
-        if done:
-            reward = -100
 
         self.prev_reward = reward
         self.prev_done = done
