@@ -1,7 +1,7 @@
-from gym_simulator.gym_wrappers import PacBotEnv
+from gym_simulator.gym_wrappers import VisualPacBotEnv
 
 if __name__ == "__main__":
-    env = PacBotEnv(speed=1)
+    env = VisualPacBotEnv(speed=1)
     obs = env.reset()
     env.render()
 
@@ -17,8 +17,13 @@ if __name__ == "__main__":
             action = 3
         elif key == "s":
             action = 4
-        _, _, done, _ = env.step(action)
+        obs, reward, done, _ = env.step(action)
         env.render()
+        # for row in obs[11]:
+        #     for cell in row:
+        #         print('1' if cell else '0', end='')
+        #     print()
+        # print(reward, done)
 
         if done:
             env.reset()

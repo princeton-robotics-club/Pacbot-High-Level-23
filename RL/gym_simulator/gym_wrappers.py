@@ -303,10 +303,10 @@ class VisualPacBotEnv(PacBotEnv):
 
         state = np.zeros((12, self.GRID_HEIGHT, self.GRID_WIDTH))
         state[0, game_state.pacbot.pos[0], game_state.pacbot.pos[1]] = 1
-        state[1, game_state.red.pos['current'][0], game_state.red.pos['current'][1]] = 1 if game_state.red.frightened_counter <= 0 else 0
-        state[2, game_state.pink.pos['current'][0], game_state.pink.pos['current'][1]] = 1 if game_state.pink.frightened_counter <= 0 else 0
-        state[3, game_state.orange.pos['current'][0], game_state.orange.pos['current'][1]] = 1 if game_state.orange.frightened_counter <= 0 else 0
-        state[4, game_state.blue.pos['current'][0], game_state.blue.pos['current'][1]] = 1 if game_state.blue.frightened_counter <= 0 else 0
+        state[1, game_state.red.pos['current'][0], game_state.red.pos['current'][1]] = int(game_state.red.frightened_counter <= 0)
+        state[2, game_state.pink.pos['current'][0], game_state.pink.pos['current'][1]] = int(game_state.pink.frightened_counter <= 0)
+        state[3, game_state.orange.pos['current'][0], game_state.orange.pos['current'][1]] = int(game_state.orange.frightened_counter <= 0)
+        state[4, game_state.blue.pos['current'][0], game_state.blue.pos['current'][1]] = int(game_state.blue.frightened_counter <= 0)
         state[5, game_state.red.pos['current'][0], game_state.red.pos['current'][1]] = game_state.red.frightened_counter / 40
         state[6, game_state.pink.pos['current'][0], game_state.pink.pos['current'][1]] = game_state.pink.frightened_counter / 40
         state[7, game_state.orange.pos['current'][0], game_state.orange.pos['current'][1]] = game_state.orange.frightened_counter / 40
@@ -340,18 +340,18 @@ class VisualPacBotEnv(PacBotEnv):
         grid[:, :] = ' '
 
         # fill in grid
-        grid[state[11]] = wall
-        grid[state[9]] = pellet
-        grid[state[10]] = power_pellet
-        grid[state[0]] = pacbot
-        grid[state[1]] = r_ghost
-        grid[state[2]] = p_ghost
-        grid[state[3]] = o_ghost
-        grid[state[4]] = b_ghost
-        grid[state[5]] = r_ghost_frightened
-        grid[state[6]] = p_ghost_frightened
-        grid[state[7]] = o_ghost_frightened
-        grid[state[8]] = b_ghost_frightened
+        grid[state[11] != 0] = wall
+        grid[state[9] != 0] = pellet
+        grid[state[10] != 0] = power_pellet
+        grid[state[0] != 0] = pacbot
+        grid[state[1] != 0] = r_ghost
+        grid[state[2] != 0] = p_ghost
+        grid[state[3] != 0] = o_ghost
+        grid[state[4] != 0] = b_ghost
+        grid[state[5] != 0] = r_ghost_frightened
+        grid[state[6] != 0] = p_ghost_frightened
+        grid[state[7] != 0] = o_ghost_frightened
+        grid[state[8] != 0] = b_ghost_frightened
 
         for row in grid:
             for cell in row:
@@ -359,5 +359,3 @@ class VisualPacBotEnv(PacBotEnv):
             print()
 
         print(f'reward: {self.prev_reward}, done: {self.prev_done}')
-    
-    
