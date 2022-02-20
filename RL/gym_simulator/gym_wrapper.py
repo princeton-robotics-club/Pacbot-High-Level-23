@@ -22,6 +22,7 @@ class PacBotEnv(gym.Env):
     metadata = {"render.modes": ["console"]}
 
     DEATH_REWARD = -50
+    LOSE_REWARD = -50
     WIN_REWARD = 100
     STEP_REWARD = -1
 
@@ -174,9 +175,9 @@ class PacBotEnv(gym.Env):
 
         done = game_state.game_over
         if done:
-            # set reward to death reward if pellets still remain
+            # set reward to lose reward if pellets still remain
             if (np.array(game_state.grid) == o).any() or (np.array(game_state.grid) == O).any():
-                reward = self.DEATH_REWARD
+                reward = self.LOSE_REWARD
             # otherwise set reward to win reward
             else:
                 reward = self.WIN_REWARD
