@@ -35,9 +35,9 @@ if __name__ == "__main__":
     parser.add_argument('--total-timesteps', type=int, default=1e8,
                         help='total timesteps of the experiments')
     parser.add_argument('--torch-deterministic', type=lambda x:bool(strtobool(x)), default=True, nargs='?', const=True,
-                        help='if toggled, `torch.backends.cudnn.deterministic=False`')
+                        help='if toggled False, `torch.backends.cudnn.deterministic=False`')
     parser.add_argument('--cuda', type=lambda x:bool(strtobool(x)), default=True, nargs='?', const=True,
-                        help='if toggled, cuda will not be enabled by default')
+                        help='if toggled False, cuda will not be enabled by default')
 
     # Algorithm specific arguments
     parser.add_argument('--n-iteration', type=int, default=32,
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--n-minibatch', type=int, default=8,
                         help='the number of mini batch')
-    parser.add_argument('--num-envs', type=int, default=16,
+    parser.add_argument('--num-envs', type=int, default=64,
                         help='the number of parallel game environment')
     parser.add_argument('--num-steps', type=int, default=128,
                         help='the number of steps per game environment')
@@ -162,7 +162,7 @@ torch.manual_seed(args.seed)
 torch.backends.cudnn.deterministic = args.torch_deterministic
 env = VisualPacBotEnv(speed=args.env_speed)
 envs = make_vec_env(lambda: env, n_envs=args.num_envs)
-envs = VecFrameStack(envs, 4)
+envs = VecFrameStack(envs, 2, channels_order="first")
 envs = VecMonitor(venv=envs)
 envs = VecNormalize(venv=envs, norm_obs=False)
 envs = VecPyTorch(envs, device)
