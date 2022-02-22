@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # Common arguments
     parser.add_argument('--exp-name', type=str, default=os.path.basename(__file__).rstrip(".py"),
                         help='the name of this experiment')
-    parser.add_argument('--learning-rate', type=float, default=5e-4,
+    parser.add_argument('--learning-rate', type=float, default=5e-3,
                         help='the learning rate of the optimizer')
     parser.add_argument('--seed', type=int, default=1,
                         help='seed of the experiment')
@@ -57,9 +57,9 @@ if __name__ == "__main__":
 
     parser.add_argument('--n-minibatch', type=int, default=8,
                         help='the number of mini batch')
-    parser.add_argument('--num-envs', type=int, default=64,
+    parser.add_argument('--num-envs', type=int, default=16,
                         help='the number of parallel game environment')
-    parser.add_argument('--num-steps', type=int, default=128,
+    parser.add_argument('--num-steps', type=int, default=1024,
                         help='the number of steps per game environment')
     parser.add_argument('--gamma', type=float, default=0.999,
                         help='the discount factor gamma')
