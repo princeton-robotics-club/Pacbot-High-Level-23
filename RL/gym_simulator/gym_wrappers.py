@@ -60,7 +60,7 @@ class PacBotEnv(gym.Env):
     STATE_VALUE_MIN = 0
     STATE_VALUE_MAX = 40
     
-    def __init__(self, speed=1):
+    def __init__(self, visualizer=None, speed=1):
         super(PacBotEnv, self).__init__()
 
         self.action_space = spaces.Discrete(self.NUM_ACTIONS)
@@ -74,6 +74,7 @@ class PacBotEnv(gym.Env):
         self.prev_reward = 0
         self.prev_done = False
         self.num_lives = self.game_state.lives
+        self.visualizer = visualizer
 
     def _get_state(self):
         game_state = self.game_state
@@ -240,7 +241,7 @@ class PacBotEnv(gym.Env):
         print(f'o - dir: {state[STATE_VALUES.index("o_dir")]}, frightened: {state[STATE_VALUES.index("o_frightened")]}, frightened_counter: {state[STATE_VALUES.index("o_frightened_counter")]}')
         print(f'b - dir: {state[STATE_VALUES.index("b_dir")]}, frightened: {state[STATE_VALUES.index("b_frightened")]}, frightened_counter: {state[STATE_VALUES.index("b_frightened_counter")]}')
         print(f'reward: {self.prev_reward}, done: {self.prev_done}')
-    
+        self.visualizer.draw_grid(grid)
     def close(self):
         self.game_state = None
 

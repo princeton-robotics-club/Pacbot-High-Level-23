@@ -6,7 +6,7 @@ if __name__ == "__main__":
     env.render()
 
     done = False
-    key = input()
+    key = visualizer.wait()
     while key != "q":
         action = 2
         if key == "w":
@@ -28,4 +28,4 @@ if __name__ == "__main__":
         if done:
             env.reset()
             env.render()
-        key = input()
+        key = visualizer.wait()
