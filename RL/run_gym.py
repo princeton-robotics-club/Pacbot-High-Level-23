@@ -1,9 +1,9 @@
-from gym_simulator.gym_wrapper import PacBotEnv
+from gym_simulator.gym_wrappers import VisualPacBotEnv
 from gym_simulator.visualizer import Visualizer
 
 if __name__ == "__main__":
     visualizer = Visualizer()
-    env = PacBotEnv(visualizer, speed=1)
+    env = VisualPacBotEnv(visualizer=visualizer, speed=1)
     obs = env.reset()
     env.render()
 
@@ -19,9 +19,14 @@ if __name__ == "__main__":
             action = 3
         elif key == "s":
             action = 4
-        obs, _, done, _ = env.step(action)
+        obs, reward, done, _ = env.step(action)
         env.render()
-        #visualizer.draw_grid(env.get_grid_from_state(obs[0]))
+        # for row in obs[11]:
+        #     for cell in row:
+        #         print('1' if cell else '0', end='')
+        #     print()
+        # print(reward, done)
+
         if done:
             env.reset()
             env.render()

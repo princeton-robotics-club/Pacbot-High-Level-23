@@ -1,35 +1,39 @@
-from stable_baselines3 import PPO
+from stable_baselines3 import DQN, PPO
+from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.env_util import make_vec_env
 
-from gym_simulator.gym_wrapper import PacBotEnv
+from gym_simulator.gym_wrappers import PacBotEnv
 
-import time
-
-def print_state(state):
-    grid = PacBotEnv.get_grid_from_state(state)
-    for row in grid:
-        for cell in row:
-            print(cell, end='')
-        print()
+import sys
 
 if __name__ == "__main__":
-    env = PacBotEnv(speed=1)
-    # wrap env
-    env = make_vec_env(lambda: env, n_envs=4)
+    assert len(sys.argv) == 2, "must supply algorithm argument (either DQN or PPO)"
+    
+    SPEED = 1
+    NUM_ENVS = 16
+    ALGORITHM = sys.argv[1]
+    assert ALGORITHM in ["DQN", "PPO"], "ALGORITHM must be either DQN or PPO"
+    TOTAL_TIMESTEPS = 10000000
+    STEPS_PER_CHECKPOINT = max(100000 // NUM_ENVS, 1)
+    FINAL_MODEL_NAME = ALGORITHM + "_final_model"
 
-    model = PPO('MlpPolicy', env, verbose=0)
-    model.learn(total_timesteps=10)
+    env = PacBotEnv(speed=SPEED)
+    envs = make_vec_env(lambda: env, n_envs=NUM_ENVS) # vectorized env
 
-    # model.save("model")
-    # model = PPO.load("model")
+    try:
+        if ALGORITHM == "DQN":
+            model = DQN.load(FINAL_MODEL_NAME, envs)
+        elif ALGORITHM == "PPO":
+            model = PPO.load(FINAL_MODEL_NAME, envs)
+    except Exception as e:
+        print(str(e))
+        print("learning from scratch")
+        if ALGORITHM == "DQN":
+            model = DQN("MlpPolicy", envs, verbose=0, tensorboard_log="logs")
+        elif ALGORITHM == "PPO":
+            model = PPO('MlpPolicy', envs, verbose=0, tensorboard_log="logs")
 
-    # testing
-    obs = env.reset()
-    print_state(obs[0])
-    print()
-    while True:
-        action, _states = model.predict(obs)
-        obs, rewards, dones, info = env.step(action)
-        print_state(obs[0])
-        print()
-        time.sleep(1)
+    checkpoint_callback = CheckpointCallback(save_freq=STEPS_PER_CHECKPOINT, save_path="checkpoints", name_prefix="mlp")
+
+    model.learn(total_timesteps=TOTAL_TIMESTEPS, callback=checkpoint_callback)
+    model.save(FINAL_MODEL_NAME)
