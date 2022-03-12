@@ -142,6 +142,25 @@ class PacBotEnv(gym.Env):
         for i in range(self.next_step_rate):
             game_state.next_step()
 
+        reward = game_state.score - self.running_score
+        self.running_score = game_state.score
+        if self.num_lives != game_state.lives:
+            reward = self.DEATH_REWARD
+            self.num_lives = game_state.lives
+
+        done = game_state.game_over
+        if done:
+            # set reward to lose reward if pellets still remain
+            if (np.array(game_state.grid) == o).any() or (np.array(game_state.grid) == O).any():
+                reward = self.LOSE_REWARD
+            # otherwise set reward to win reward
+            else:
+                reward = self.WIN_REWARD
+
+        reward += self.STEP_REWARD
+        self.prev_reward = reward
+        self.prev_done = done
+
         old_pac_pos = game_state.pacbot.pos # (row, col)
 
         if action == self.UP:
@@ -167,24 +186,6 @@ class PacBotEnv(gym.Env):
         
         game_state.pacbot.update(new_pac_pos)
 
-        reward = game_state.score - self.running_score
-        self.running_score = game_state.score
-        if self.num_lives != game_state.lives:
-            reward = self.DEATH_REWARD
-            self.num_lives = game_state.lives
-
-        done = game_state.game_over
-        if done:
-            # set reward to lose reward if pellets still remain
-            if (np.array(game_state.grid) == o).any() or (np.array(game_state.grid) == O).any():
-                reward = self.LOSE_REWARD
-            # otherwise set reward to win reward
-            else:
-                reward = self.WIN_REWARD
-
-        reward += self.STEP_REWARD
-        self.prev_reward = reward
-        self.prev_done = done
         # return state, reward, done, info
         return self._get_state(), reward, done, {}
 
