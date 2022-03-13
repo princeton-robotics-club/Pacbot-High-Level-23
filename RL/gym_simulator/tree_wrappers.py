@@ -50,8 +50,8 @@ def assign_sensible_actions(node):
 
 
 class PacBotNode():
-    def __init__(self, speed=1):
-        self.env = PacBotEnv(speed=speed)
+    def __init__(self, visualizer=None, speed=1):
+        self.env = PacBotEnv(visualizer=visualizer, speed=speed)
         self.obs = self.env.reset()
         self.done = False
         self.prev_action = self.env.STAY

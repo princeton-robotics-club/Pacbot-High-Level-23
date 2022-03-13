@@ -21,6 +21,7 @@ class Visualizer(object):
     wall = pygame.image.load("static/wall.png").convert()
     pellet = pygame.image.load("static/dot.png").convert()
     power_pellet = pygame.image.load("static/power.png").convert()
+    ghost_frightened = pygame.image.load("static/ghost_white.png").convert()
     grid_legend = {
         "a": pacbot,
         "r": r_ghost,
@@ -40,8 +41,10 @@ class Visualizer(object):
                 tile = self.grid_legend.get(cell_val)
                 if tile:
                     self.screen.blit(tile, (row * self.IMAGE_SIZE, cell * self.IMAGE_SIZE))
-        self.screen.blit(self.pacbot, (0, 0))
+                elif cell_val in ("R", "P", "O", "B"):
+                    self.screen.blit(self.ghost_frightened, (row * self.IMAGE_SIZE, cell * self.IMAGE_SIZE))
         pygame.display.update()
+        
     def wait(self):
         while True:
             for event in pygame.event.get():

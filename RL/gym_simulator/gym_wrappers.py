@@ -241,7 +241,8 @@ class PacBotEnv(gym.Env):
         print(f'o - dir: {state[STATE_VALUES.index("o_dir")]}, frightened: {state[STATE_VALUES.index("o_frightened")]}, frightened_counter: {state[STATE_VALUES.index("o_frightened_counter")]}')
         print(f'b - dir: {state[STATE_VALUES.index("b_dir")]}, frightened: {state[STATE_VALUES.index("b_frightened")]}, frightened_counter: {state[STATE_VALUES.index("b_frightened_counter")]}')
         print(f'reward: {self.prev_reward}, done: {self.prev_done}')
-        self.visualizer.draw_grid(grid)
+        if self.visualizer:
+            self.visualizer.draw_grid(grid)
     def close(self):
         self.game_state = None
 
@@ -363,5 +364,8 @@ class VisualPacBotEnv(PacBotEnv):
             for cell in row:
                 print(cell, end='')
             print()
-
+            
+        if self.visualizer:
+            self.visualizer.draw_grid(grid)
+            
         print(f'reward: {self.prev_reward}, done: {self.prev_done}')

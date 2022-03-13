@@ -1,7 +1,9 @@
 from gym_simulator.gym_wrappers import VisualPacBotEnv
+from gym_simulator.visualizer import Visualizer
 
 if __name__ == "__main__":
-    env = VisualPacBotEnv(speed=1)
+    visualizer = Visualizer()
+    env = VisualPacBotEnv(visualizer=visualizer, speed=1)
     obs = env.reset()
     env.render()
 
