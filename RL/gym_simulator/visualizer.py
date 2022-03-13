@@ -32,7 +32,7 @@ class Visualizer(object):
         "-": pellet,
         "%": power_pellet,
     }
-    screen.fill(((255, 255, 255)))
+
     def draw_grid(self, grid):
         self.screen.fill(((0, 0, 0)))
         for row, row_vals in enumerate(grid):
