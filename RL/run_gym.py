@@ -3,7 +3,7 @@ from gym_simulator.visualizer import Visualizer
 
 if __name__ == "__main__":
     visualizer = Visualizer()
-    env = VisualPacBotEnv(visualizer=visualizer, speed=1)
+    env = VisualPacBotEnv(speed=1)
     obs = env.reset()
     env.render()
 
@@ -20,7 +20,8 @@ if __name__ == "__main__":
         elif key == "s":
             action = 4
         obs, reward, done, _ = env.step(action)
-        env.render()
+        grid = env.render()
+        visualizer.draw_grid(grid)
         # for row in obs[11]:
         #     for cell in row:
         #         print('1' if cell else '0', end='')

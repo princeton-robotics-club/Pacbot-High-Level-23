@@ -45,6 +45,8 @@ class PacBotEnv(gym.Env):
     NUM_POWER_PELLETS = np.sum(POWER_PELLET_LOCATIONS != 0)
 
     WALL_LOCATIONS = np.array(grid) == I
+    GHOST_SPAWN = np.array(grid) == n
+    BAD_LOCATIONS = WALL_LOCATIONS + GHOST_SPAWN
 
     STATE_VALUES = [
         "mode", "lives", "cherry", "frightened_timer",
@@ -60,7 +62,7 @@ class PacBotEnv(gym.Env):
     STATE_VALUE_MIN = 0
     STATE_VALUE_MAX = 40
     
-    def __init__(self, visualizer=None, speed=1):
+    def __init__(self, speed=1):
         super(PacBotEnv, self).__init__()
 
         self.action_space = spaces.Discrete(self.NUM_ACTIONS)
@@ -74,7 +76,6 @@ class PacBotEnv(gym.Env):
         self.prev_reward = 0
         self.prev_done = False
         self.num_lives = self.game_state.lives
-        self.visualizer = visualizer
 
     def _get_state(self):
         game_state = self.game_state
@@ -203,6 +204,7 @@ class PacBotEnv(gym.Env):
         p_ghost = "p"
         o_ghost = "o"
         b_ghost = "b"
+        frightened_ghost = "f"
         wall = "#"
         pellet = "-"
         power_pellet = "%"
@@ -223,16 +225,21 @@ class PacBotEnv(gym.Env):
             if power_pellet_exists[i]:
                 grid[self.POWER_PELLET_LOCATIONS == i+1] = power_pellet
 
-        grid[int(state[STATE_VALUES.index("pac_x")]), int(state[STATE_VALUES.index("pac_y")])] = pacbot 
-        grid[int(state[STATE_VALUES.index("r_x")]), int(state[STATE_VALUES.index("r_y")])] = r_ghost 
-        grid[int(state[STATE_VALUES.index("p_x")]), int(state[STATE_VALUES.index("p_y")])] = p_ghost 
-        grid[int(state[STATE_VALUES.index("o_x")]), int(state[STATE_VALUES.index("o_y")])] = o_ghost 
-        grid[int(state[STATE_VALUES.index("b_x")]), int(state[STATE_VALUES.index("b_y")])] = b_ghost 
+        r_frightened = state[STATE_VALUES.index("r_frightened")]
+        p_frightened = state[STATE_VALUES.index("p_frightened")]
+        o_frightened = state[STATE_VALUES.index("o_frightened")]
+        b_frightened = state[STATE_VALUES.index("b_frightened")]
         
-        for row in grid:
-            for cell in row:
-                print(cell, end='')
-            print()
+        grid[int(state[STATE_VALUES.index("pac_x")]), int(state[STATE_VALUES.index("pac_y")])] = pacbot 
+        grid[int(state[STATE_VALUES.index("r_x")]), int(state[STATE_VALUES.index("r_y")])] = frightened_ghost if r_frightened else r_ghost
+        grid[int(state[STATE_VALUES.index("p_x")]), int(state[STATE_VALUES.index("p_y")])] = frightened_ghost if p_frightened else p_ghost 
+        grid[int(state[STATE_VALUES.index("o_x")]), int(state[STATE_VALUES.index("o_y")])] = frightened_ghost if o_frightened else o_ghost 
+        grid[int(state[STATE_VALUES.index("b_x")]), int(state[STATE_VALUES.index("b_y")])] = frightened_ghost if b_frightened else b_ghost 
+        
+        # for row in grid:
+        #     for cell in row:
+        #         print(cell, end='')
+        #     print()
 
         print(f'Mode: {state[STATE_VALUES.index("mode")]}, Lives: {state[STATE_VALUES.index("lives")]}, Cherry: {state[STATE_VALUES.index("cherry")]}, Frightened Timer: {state[STATE_VALUES.index("frightened_timer")]}')
         print(f'a - dir: {state[STATE_VALUES.index("pac_dir")]}')
@@ -241,8 +248,8 @@ class PacBotEnv(gym.Env):
         print(f'o - dir: {state[STATE_VALUES.index("o_dir")]}, frightened: {state[STATE_VALUES.index("o_frightened")]}, frightened_counter: {state[STATE_VALUES.index("o_frightened_counter")]}')
         print(f'b - dir: {state[STATE_VALUES.index("b_dir")]}, frightened: {state[STATE_VALUES.index("b_frightened")]}, frightened_counter: {state[STATE_VALUES.index("b_frightened_counter")]}')
         print(f'reward: {self.prev_reward}, done: {self.prev_done}')
-        if self.visualizer:
-            self.visualizer.draw_grid(grid)
+        return grid
+    
     def close(self):
         self.game_state = None
 
@@ -365,7 +372,5 @@ class VisualPacBotEnv(PacBotEnv):
                 print(cell, end='')
             print()
             
-        if self.visualizer:
-            self.visualizer.draw_grid(grid)
             
         print(f'reward: {self.prev_reward}, done: {self.prev_done}')
