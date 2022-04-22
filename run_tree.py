@@ -3,7 +3,9 @@ from simulator.visualizer import Visualizer
 
 if __name__ == "__main__":
     visualizer = Visualizer()
-    node = PacBotNode(speed=1)
+    node = PacBotNode((0, 0), speed=1)
+    grid = node.render()
+    visualizer.draw_grid(grid)
 
     done = False
     key = visualizer.wait()
@@ -18,7 +20,7 @@ if __name__ == "__main__":
         elif key == "s":
             action = 4
         node = node.next_node(action)
-        grid = node.env.render()
+        grid = node.render()
         visualizer.draw_grid(grid)
         # for row in obs[11]:
         #     for cell in row:
@@ -26,6 +28,6 @@ if __name__ == "__main__":
         #     print()
         # print(reward, done)
 
-        if done:
-            node = PacBotNode(speed=1)
+        if node.is_target:
+            node = PacBotNode((0, 0), speed=1)
         key = visualizer.wait()

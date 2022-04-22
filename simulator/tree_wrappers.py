@@ -1,85 +1,78 @@
-from .gym_wrappers import PacBotEnv
-from .game_engine.variables import *
-import copy
 import numpy as np
+import copy
 from .game_engine.grid import grid
+from .gym_wrappers import PacBotEnv
 
-def manhattan_dist(pos1, pos2):
-    return np.abs((np.array(pos1) - np.array(pos2))).sum()
-
-def evaluate(node):
-    pellet_weight = 1
-    power_weight = 10
-    survival_weight = 100000
-
-    env = node.env
-    game_state = node.env.game_state
-
-    pellet_score = -1*(np.array(game_state.grid)[env.PELLET_LOCATIONS != 0] == o).sum()
-    power_score = -1*(np.array(game_state.grid)[env.POWER_PELLET_LOCATIONS != 0] == O).sum()
-
-    pac_x, pac_y = game_state.pacbot.pos[0], game_state.pacbot.pos[1]
-    # r_x, r_y, r_frightened = game_state.red.pos['current'][0], game_state.red.pos['current'][1], 1 if game_state.red.frightened_counter > 0 else 0
-    # p_x, p_y, p_frightened = game_state.pink.pos['current'][0], game_state.pink.pos['current'][1], 1 if game_state.pink.frightened_counter > 0 else 0
-    # o_x, o_y, o_frightened = game_state.orange.pos['current'][0], game_state.orange.pos['current'][1], 1 if game_state.orange.frightened_counter > 0 else 0
-    # b_x, b_y, b_frightened = game_state.blue.pos['current'][0], game_state.blue.pos['current'][1], 1 if game_state.blue.frightened_counter > 0 else 0
-    ghosts = [game_state.red, game_state.pink, game_state.orange, game_state.blue]
-    ghosts = [ghost for ghost in ghosts if not ghost.frightened_counter > 0]
-    survival_score = 0
-    if ghosts:
-        survival_score = -1*(np.min([manhattan_dist(game_state.pacbot.pos, ghost.pos['current']) for ghost in ghosts]) < 4)
-    
-    #survival_score = -1*(env.num_lives != node.prev_lives)
-    #survival_score = 0
-    return pellet_weight*pellet_score + power_weight*power_score + survival_weight*survival_score
-
-def assign_sensible_actions(node):
-    pac_x, pac_y = node.env.game_state.pacbot.pos
-    node.sensible_actions = []
-    for i in range(node.env.NUM_ACTIONS):
-        if i == node.env.UP:
-            if not node.env.BAD_LOCATIONS[pac_x - 1, pac_y]:
-                node.sensible_actions.append(i)
-        elif i == node.env.LEFT:
-            if not node.env.BAD_LOCATIONS[pac_x, pac_y - 1]:
-                node.sensible_actions.append(i)
-        elif i == node.env.STAY:
-            if not node.env.BAD_LOCATIONS[pac_x, pac_y]:
-                node.sensible_actions.append(i)
-        elif i == node.env.RIGHT:
-            if not node.env.BAD_LOCATIONS[pac_x, pac_y + 1]:
-                node.sensible_actions.append(i)
-        elif i == node.env.DOWN:
-            if not node.env.BAD_LOCATIONS[pac_x + 1, pac_y]:
-                node.sensible_actions.append(i)
-
-
+# intended for A-star
+# usage:
+#    node = PacBotNode(target, speed) # where target is (pac_x, pac_y)
+# useful attributes:
+#    node.val               # value of node to use with A-star (a function of target)
+#    node.is_target         # boolean indicating whether the node is the target node
+#    node.sensible_actions  # list of actions which are sensible
+#    node.next_node(action) # returns child node
+#    node.render()      # returns grid which can be used with Visualizer
 class PacBotNode():
-    def __init__(self, speed=1):
-        self.env = PacBotEnv(speed=speed)
-        self.obs = self.env.reset()
-        self.done = False
-        self.direction = self.env.DOWN
-        self.prev_action = self.env.STAY
-        self.prev_lives = 3
-        self.val = evaluate(self)
-        self.depth = 0
+    def _set_val(self):
+        self.val = self._target_dists[pac_x, pac_y]
+
+    def _set_is_target(self):
+        pac_x, pac_y = self._env.game_state.pacbot.pos
+        self.is_target = (self._target == np.array(self._env.game_state.pacbot.pos)).all()
+
+    def _set_sensible_actions(self):
+        pac_x, pac_y = self._env.game_state.pacbot.pos
+        self.sensible_actions = []
+        for i in range(self._env.NUM_ACTIONS):
+            if i == self._env.UP:
+                if not self._env.BAD_LOCATIONS[pac_x - 1, pac_y]:
+                    self.sensible_actions.append(i)
+            elif i == self._env.LEFT:
+                if not self._env.BAD_LOCATIONS[pac_x, pac_y - 1]:
+                    self.sensible_actions.append(i)
+            elif i == self._env.STAY:
+                if not self._env.BAD_LOCATIONS[pac_x, pac_y]:
+                    self.sensible_actions.append(i)
+            elif i == self._env.RIGHT:
+                if not self._env.BAD_LOCATIONS[pac_x, pac_y + 1]:
+                    self.sensible_actions.append(i)
+            elif i == self._env.DOWN:
+                if not self._env.BAD_LOCATIONS[pac_x + 1, pac_y]:
+                    self.sensible_actions.append(i)
+
+    def __init__(self, target, speed=1):
+        # assign tree-common attributes
+        self._target_dists = np.fill(float("inf"), np.array(grid).shape)
+
+        # assign internal attributes
+        self._env = PacBotEnv(speed=speed)
+        self._env.reset()
+        assert target[0] >= 0 and target[0] < self._env.GRID_HEIGHT and target[1] >= 0 and target[1] < self._env.GRID_WIDTH, "target must be (row, col)"
+        self._target = target
+        self._direction = self._env.UP
+        self._prev_action = self._env.STAY
+
+        # assign public attributes
+        self._set_val()
+        self._set_is_target()
+        self._set_sensible_actions()
+        
+        
         assign_sensible_actions(self)
 
     def next_node(self, action):
         child = copy.deepcopy(self)
-        if action != self.direction and action != self.env.STAY:
-            child.direction = action
-            action = self.env.STAY    
-        child.obs, _, child.done, _ = child.env.step(action)
-        child.prev_action = action
-        if action != self.env.STAY:
-            child.direction = action
-        child.prev_lives = self.env.num_lives
+        if action != self._direction and action != self._env.STAY:
+            child._direction = action
+            action = self._env.STAY    
+        child.obs, _, child.done, _ = child._env.step(action)
+        child._prev_action = action
+        if action != self._env.STAY:
+            child._direction = action
         child.val = evaluate(child)
         child.depth += 1
         assign_sensible_actions(child)
         return child
 
-    def __lt__(self, other):
-        return self.val < other.val
+    def render(self):
+        return self._env.render()

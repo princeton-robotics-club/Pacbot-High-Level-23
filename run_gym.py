@@ -5,7 +5,8 @@ if __name__ == "__main__":
     visualizer = Visualizer()
     env = PacBotEnv(speed=1)
     obs = env.reset()
-    env.render()
+    grid = env.render()
+    visualizer.draw_grid(grid)
 
     done = False
     key = visualizer.wait()
