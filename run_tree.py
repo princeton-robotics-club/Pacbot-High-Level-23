@@ -1,11 +1,9 @@
-from simulator.gym_wrappers import PacBotEnv
+from simulator.tree_wrappers import PacBotNode
 from simulator.visualizer import Visualizer
 
 if __name__ == "__main__":
     visualizer = Visualizer()
-    env = PacBotEnv(speed=1)
-    obs = env.reset()
-    env.render()
+    node = PacBotNode(speed=1)
 
     done = False
     key = visualizer.wait()
@@ -19,8 +17,8 @@ if __name__ == "__main__":
             action = 3
         elif key == "s":
             action = 4
-        obs, reward, done, _ = env.step(action)
-        grid = env.render()
+        node = node.next_node(action)
+        grid = node.env.render()
         visualizer.draw_grid(grid)
         # for row in obs[11]:
         #     for cell in row:
@@ -29,6 +27,5 @@ if __name__ == "__main__":
         # print(reward, done)
 
         if done:
-            env.reset()
-            env.render()
+            node = PacBotNode(speed=1)
         key = visualizer.wait()

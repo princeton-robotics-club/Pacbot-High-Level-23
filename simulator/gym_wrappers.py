@@ -2,9 +2,9 @@ import numpy as np
 import gym
 from gym import spaces 
 
-from .gameState import GameState
-from .grid import grid
-from .variables import *
+from .game_engine.gameState import GameState
+from .game_engine.grid import grid
+from .game_engine.variables import *
 
 """
 game state is [

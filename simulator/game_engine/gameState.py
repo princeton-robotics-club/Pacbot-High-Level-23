@@ -139,6 +139,7 @@ class GameState:
     def _end_game(self):
         self.elapsed_time += time.time() - self.previous_start
         self.play = False
+        self.game_over = True
         print("Score: " + str(self.score))
         print("Time: " + str(self.elapsed_time))
 
@@ -270,3 +271,4 @@ class GameState:
         self._update_score()
         self.grid[cherry_pos[0]][cherry_pos[1]] = e
         self.ticks_since_spawn = 0
+        self.game_over = False

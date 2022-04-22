@@ -1,8 +1,8 @@
 from .gym_wrappers import PacBotEnv
-from gym_simulator.variables import *
+from .game_engine.variables import *
 import copy
 import numpy as np
-from .grid import grid
+from .game_engine.grid import grid
 
 def manhattan_dist(pos1, pos2):
     return np.abs((np.array(pos1) - np.array(pos2))).sum()
