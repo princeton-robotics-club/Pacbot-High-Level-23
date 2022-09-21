@@ -8,7 +8,7 @@ if __name__ == "__main__":
     visualizer.draw_grid(grid)
 
     done = False
-    key = visualizer.wait()
+    key = visualizer.wait_manual_control()
     while key != "q":
         action = 2
         if key == "w":
@@ -30,4 +30,4 @@ if __name__ == "__main__":
 
         if node.is_target:
             node = PacBotNode((0, 0), speed=1)
-        key = visualizer.wait()
+        key = visualizer.wait_manual_control()

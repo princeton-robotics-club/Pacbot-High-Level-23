@@ -1,8 +1,9 @@
 import numpy as np
 from simulator.gym_wrappers import PacBotEnv
 from simulator.visualizer import Visualizer
-from high_level import get_action
+from policies.high_level_policy import HighLevelPolicy
 import time
+import pygame
 
 if __name__ == "__main__":
     visualizer = Visualizer()
@@ -10,11 +11,12 @@ if __name__ == "__main__":
     obs = env.reset()
     grid = env.render()
     visualizer.draw_grid(grid)
+    policy = HighLevelPolicy()
 
     done = False
     key = 0
     #key = visualizer.wait()
-    while key != "q":
+    while key != pygame.K_q:
         pellets = np.zeros((env.GRID_HEIGHT, env.GRID_WIDTH))
         power_pellets = np.zeros((env.GRID_HEIGHT, env.GRID_WIDTH))
         pellet_exists = obs[np.array(env.STATE_VALUES) == "pellet"]
@@ -40,7 +42,7 @@ if __name__ == "__main__":
             "pf": obs[env.STATE_VALUES.index("p_frightened")],
             "dt": obs[env.STATE_VALUES.index("frightened_timer")] / 2,
         }
-        action = get_action(state)
+        action = policy.get_action(state)
         obs, reward, done, _ = env.step(action)
         grid = env.render()
         visualizer.draw_grid(grid)
@@ -53,5 +55,5 @@ if __name__ == "__main__":
         if done:
             env.reset()
             env.render()
-        #key = visualizer.wait()
+        key = visualizer.wait_ai_control()
         time.sleep(0.1)
