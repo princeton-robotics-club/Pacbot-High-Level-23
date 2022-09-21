@@ -15,7 +15,7 @@ To get started, follow the instructions in the README. After you have done
 the setup there and are ready to make changes, you can use the following
 commands to contribute to the codebase.
 
-1.
+## Branches
 
 Git has a concept called branches. Branches allow you to make changes starting from a snapshot of the codebase. We will have one branch, main, that will be the primary starting point for your branches.
 
@@ -35,7 +35,7 @@ At this point, the branch is only on your local computer, so to let github know 
 
 This establishes what is called a remote branch, which your local branch is 'tracking'. This will be important for later.
 
-2.
+## Making Changes
 
 After writing some code/making changes, if you come to a point where you feel that you want to 'save' and officially record your current progress, you can commit what you've done so far.
 
@@ -51,13 +51,15 @@ Then, you can add these desired changes into a commit:
 
 `git commit -m "[a descriptive message]"`
 
-Think of a commit as a checkpoint that is recorded in the project's history. You've now added a commit to your branch's history. However, these changes are only reflected on your local computer. In order to update the history on github, you would do
+Think of a commit as a checkpoint that is recorded in the project's history. A commit should generally be small so that you're consistently saving your progress. Try to make commits where the code is still in a workable state (ie distinct milestones, avoiding bugs).
+
+You've now added a commit to your branch's history. However, these changes are only reflected on your local computer. In order to update the history on github, you would do
 
 `git push`
 
 This would record the commits you made to the remote branch you have setup on Github.
 
-2a.
+## General Things
 
 Before your push code, it's generally good to see if you missed any changes that were pushed to Github.
 
@@ -72,9 +74,3 @@ If you and other teammates are working on the same branch, you should run
 `git pull`
 
 before pushing your commits. `git pull` by itself will pull changes from the remote branch your current local branch is tracking. Basically, it will merge any changes your teammates have pushed to the corresponding remote branch.
-
-For this project, I imagine a system where you use step 1 whenever you want to make a new feature. Step 2 is generally what you're going to be using while you're developing your feature, and you should do multiple times. A commit should generally be small so that you're consistently saving your progress, and if you don't like changes you've made recently, you can quickly revert to a previous commit.
-
-To revert to the last commit (wipes any changes you don't have committed):
-
-`git checkout .`
