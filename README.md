@@ -14,8 +14,10 @@ Optional: Activate a virtual environment. The purpose of this is to avoid instal
 versions of packages specific to your project. If you have multiple python projects on your computer, this is a godsend.
 The following commands create a virtual environment called 'env' and activates it:
 
-`python -m venv env`
-`env\Scripts\activate`
+```
+python -m venv env
+env\Scripts\activate
+```
 
 Next, cd into the newly cloned git repository folder and install all package dependencies defined in requirements.txt:
 

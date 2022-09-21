@@ -1,4 +1,4 @@
-Git Basics:
+# Git Basics
 
 Here are COS333 notes about version control: [Link](https://www.cs.princeton.edu/courses/archive/fall22/cos333/lectures/02versionctrl/GitGitHubPrimer.pdf)
 This will have information on setting up Git/Github. You can probably skip the steps about creating a new repository for now.
@@ -15,7 +15,9 @@ To get started, follow the instructions in the README. After you have done
 the setup there and are ready to make changes, you can use the following
 commands to contribute to the codebase.
 
-1. Git has a concept called branches. Branches allow you to make changes starting from a snapshot of the codebase. We will have one branch, main, that will be the primary starting point for your branches.
+1.
+
+Git has a concept called branches. Branches allow you to make changes starting from a snapshot of the codebase. We will have one branch, main, that will be the primary starting point for your branches.
 
 To get started with making changes, create a new branch:
 
@@ -33,7 +35,9 @@ At this point, the branch is only on your local computer, so to let github know 
 
 This establishes what is called a remote branch, which your local branch is 'tracking'. This will be important for later.
 
-2. After writing some code/making changes, if you come to a point where you feel that you want to 'save' and officially record your current progress, you can commit what you've done so far.
+2.
+
+After writing some code/making changes, if you come to a point where you feel that you want to 'save' and officially record your current progress, you can commit what you've done so far.
 
 First, you add the files you want to commit.
 
@@ -53,7 +57,9 @@ Think of a commit as a checkpoint that is recorded in the project's history. You
 
 This would record the commits you made to the remote branch you have setup on Github.
 
-2a. Before your push code, it's generally good to see if you missed any changes that were pushed to Github.
+2a.
+
+Before your push code, it's generally good to see if you missed any changes that were pushed to Github.
 
 For example, the main branch will contain all the important code that every branch needs. in order to merge any commits that have been pushed to main to the current branch you're on, run a
 
