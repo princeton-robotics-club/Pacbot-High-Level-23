@@ -1,6 +1,7 @@
 # Git Basics
 
 Here are COS333 notes about version control: [Link](https://www.cs.princeton.edu/courses/archive/fall22/cos333/lectures/02versionctrl/GitGitHubPrimer.pdf)
+
 This will have information on setting up Git/Github. You can probably skip the steps about creating a new repository for now.
 
 We will be using Git/Github for version control of our project. Version control
