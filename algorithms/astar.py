@@ -1,12 +1,15 @@
-class Node():
+class Node:
     """A node class for A* Pathfinding"""
 
     def __init__(self, parent=None, position=None):
         self.parent = parent
         self.position = position
 
+        # estimated cost of getting to this node
         self.g = 0
+        # estimated cost of getting to destination from this node
         self.h = 0
+        # estimated cost of entire path
         self.f = 0
 
     def __eq__(self, other):
@@ -35,7 +38,7 @@ def astar(maze, start, end):
     # Loop until you find the end
     while len(open_list) > 0:
 
-        # Get the current node
+        # Get the current node with lowest estimated cost
         current_node = open_list[0]
         current_index = 0
         for index, item in enumerate(open_list):
@@ -54,17 +57,25 @@ def astar(maze, start, end):
             while current is not None:
                 path.append(current.position)
                 current = current.parent
-            return path[::-1] # Return reversed path
+            return path[::-1]  # Return reversed path
 
         # Generate children
         children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
+        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:  # Adjacent squares
 
             # Get node position
-            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+            node_position = (
+                current_node.position[0] + new_position[0],
+                current_node.position[1] + new_position[1],
+            )
 
             # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
+            if (
+                node_position[0] > (len(maze) - 1)
+                or node_position[0] < 0
+                or node_position[1] > (len(maze[len(maze) - 1]) - 1)
+                or node_position[1] < 0
+            ):
                 continue
 
             # Make sure walkable terrain
@@ -80,18 +91,23 @@ def astar(maze, start, end):
         # Loop through children
         for child in children:
 
-            # Child is on the closed list
             skip = False
-            for closed_child in closed_list:
-                if child == closed_child:
+
+            # Checks if child is on the closed list
+            for closed_node in closed_list:
+                if closed_node == child:
                     skip = True
                     break
+
             if skip:
                 continue
 
             # Create the f, g, and h values
             child.g = current_node.g + 1
-            child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
+            # current heuristic is euclidean distance
+            child.h = ((child.position[0] - end_node.position[0]) ** 2) + (
+                (child.position[1] - end_node.position[1]) ** 2
+            )
             child.f = child.g + child.h
 
             # Child is already in the open list
@@ -99,6 +115,7 @@ def astar(maze, start, end):
             for open_node in open_list:
                 if child == open_node:
                     on = True
+                    # possibly need to rework this if heuristic isn't based on distance
                     if child.g > open_node.g:
                         skip = True
             if skip:
@@ -113,23 +130,24 @@ def astar(maze, start, end):
 
 def main():
 
-    maze = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+    maze = [
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ]
 
     start = (0, 0)
-    end = (7, 6)
-
+    end = (9, 6)
     path = astar(maze, start, end)
     print(path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
