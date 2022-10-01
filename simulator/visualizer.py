@@ -49,11 +49,20 @@ class Visualizer(object):
         #self.screen.blit(pygame.transform.scale(self.fake_screen, self.screen.get_rect().size), (0,0))
         pygame.display.update()
         
-    def wait(self):
+    def wait_manual_control(self):
+        # blocks code until key is pressed
         while True:
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
-                    return pygame.key.name(event.key)
-    def wait2(self):
-        pygame.event.get()
-        #time.sleep(0.5)
+                    return event.key
+
+    def wait_ai_control(self):
+        # only blocks if the space key is pressed
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    while True:
+                        key_pressed = self.wait_manual_control()
+                        if key_pressed in {pygame.K_SPACE, pygame.K_q}:
+                            return key_pressed
+                return event.key

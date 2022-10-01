@@ -1,5 +1,6 @@
 from simulator.gym_wrappers import PacBotEnv
 from simulator.visualizer import Visualizer
+import pygame
 
 if __name__ == "__main__":
     visualizer = Visualizer()
@@ -9,16 +10,16 @@ if __name__ == "__main__":
     visualizer.draw_grid(grid)
 
     done = False
-    key = visualizer.wait()
-    while key != "q":
+    key = visualizer.wait_manual_control()
+    while key != pygame.K_q:
         action = 2
-        if key == "w":
+        if key == pygame.K_w:
             action = 0
-        elif key == "a":
+        elif key == pygame.K_a:
             action = 1
-        elif key == "d":
+        elif key == pygame.K_d:
             action = 3
-        elif key == "s":
+        elif key == pygame.K_s:
             action = 4
         obs, reward, done, _ = env.step(action)
         grid = env.render()
@@ -32,4 +33,4 @@ if __name__ == "__main__":
         if done:
             env.reset()
             env.render()
-        key = visualizer.wait()
+        key = visualizer.wait_manual_control()

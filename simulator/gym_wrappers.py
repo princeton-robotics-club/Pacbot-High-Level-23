@@ -141,11 +141,14 @@ class PacBotEnv(gym.Env):
 
         game_state = self.game_state
 
+        # accounts for different engine speeds
         for i in range(self.next_step_rate):
             game_state.next_step()
 
         reward = game_state.score - self.running_score
         self.running_score = game_state.score
+        
+        # indicates that the pacbot has lost a life
         if self.num_lives != game_state.lives:
             reward = self.DEATH_REWARD
             self.num_lives = game_state.lives
@@ -183,6 +186,7 @@ class PacBotEnv(gym.Env):
         else:
             raise ValueError("Received invalid action={} which is not part of the action space.".format(action))
 
+        # handles invalid new positions
         if self.WALL_LOCATIONS[new_pac_pos[0], new_pac_pos[1]] != 0:
             new_pac_pos = old_pac_pos
         
