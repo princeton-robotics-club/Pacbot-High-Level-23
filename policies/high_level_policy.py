@@ -6,12 +6,6 @@ from policies.policy import Policy
 
 
 class HighLevelPolicy(Policy):
-    # o = normal pellet, e = empty space, O = power pellet, c = cherry position
-    # I = wall, n = ghost chambers
-    WALLS = np.logical_or(np.array(grid) == I, np.array(grid) == n, dtype=bool)
-
-    ACTIONS = [(-1, 0), (0, -1), (0, 0), (0, 1), (1, 0)]
-
     NT = 3
 
     # helper method to astar to a ghost, which is technically a barrier in maze
@@ -78,7 +72,9 @@ class HighLevelPolicy(Policy):
                 if closest_d <= 1:
                     break
         if closest_d and closest_d <= state["dt"]:
-            return self.ACTIONS.index(tuple(np.subtract(closest_path[1], closest_path[0])))
+            return self.ACTIONS.index(
+                tuple(np.subtract(closest_path[1], closest_path[0]))
+            )
 
         print("phase: power pellets")
 
@@ -95,40 +91,44 @@ class HighLevelPolicy(Policy):
                 nearby = True
         print("nearby:", nearby)
         positions = np.argwhere(state["power_pellets"])
-        closest_d = None 
+        closest_d = None
         closest_path = None
         for position in positions:
             print("pathfinding to power pellet")
             path = astar(obstacles, state["pac"], position)
             if not path or len(path) < 2:
-                continue 
+                continue
             if closest_d is None or closest_d > len(path) - 1:
                 closest_d = len(path) - 1
-                closest_path = path 
+                closest_path = path
                 if closest_d <= 1:
                     break
         if closest_d:
             if closest_d > 1 or nearby:
-                return self.ACTIONS.index(tuple(np.subtract(closest_path[1], closest_path[0])))
+                return self.ACTIONS.index(
+                    tuple(np.subtract(closest_path[1], closest_path[0]))
+                )
             else:
                 return self.ACTIONS.index((0, 0))
-            
+
         print("phase: pellets")
         # target the closest pellet not on pac
         # move to it if it exists
         positions = np.argwhere(state["pellets"])
-        closest_d = None 
+        closest_d = None
         closest_path = None
         for position in positions:
             path = astar(obstacles, state["pac"], position)
             if not path or len(path) < 2:
-                continue 
+                continue
             if closest_d is None or closest_d > len(path) - 1:
                 closest_d = len(path) - 1
-                closest_path = path 
+                closest_path = path
                 if closest_d <= 1:
                     break
         if closest_d:
-            return self.ACTIONS.index(tuple(np.subtract(closest_path[1], closest_path[0])))
+            return self.ACTIONS.index(
+                tuple(np.subtract(closest_path[1], closest_path[0]))
+            )
 
         return self.ACTIONS.index((0, 0))
