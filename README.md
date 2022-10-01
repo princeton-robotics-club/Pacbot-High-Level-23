@@ -8,7 +8,7 @@ Side note: Some of these instructions may only work on Windows. There are equiva
 
 To run the PacBot game code as a gym environment (which is the standard interface used in ML RL), first clone the repository to your computer with the following instructions. Using your terminal, navigate to your project directory and execute:
 
-`git clone https://github.com/princeton-robotics-club/Princeton_Robotics_Club_PacBot.git`
+`git clone https://github.com/princeton-robotics-club/Pacbot-High-Level.git`
 
 Optional: Activate a virtual environment. The purpose of this is to avoid installing packages globally and have the correct
 versions of packages specific to your project. If you have multiple python projects on your computer, this is a godsend.
