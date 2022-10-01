@@ -25,7 +25,7 @@ Next, cd into the newly cloned git repository folder and install all package dep
 
 A demo usage of the gym environment is in gym_simulator/gym_runner.py and can be run with (after you cd into gym_simulator):
 
-`python gym_runner.py`
+`python run_high_level.py`
 
 The demo takes input by keyboard input followed by an enter
 
