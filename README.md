@@ -1,4 +1,4 @@
-# Princeton_Robotics_Club_PacBot
+# Princeton_Robotics_Club_PacBot :)
 
 software for Princeton Robotics Club team in the 2022 Harvard PacBot competition
 
