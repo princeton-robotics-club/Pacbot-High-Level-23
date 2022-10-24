@@ -42,6 +42,10 @@ A demo usage of the gym environment is in gym_simulator/run_high_level.py and ca
 
 This will run whatever policy is being used in the run_high_level script.
 
+To add pauses to make the simulation easier to watch, you can use the following command:
+
+`python run_high_level.py --s`
+
 The demo takes the following inputs:
 
 q = quit
