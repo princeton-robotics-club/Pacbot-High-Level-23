@@ -31,8 +31,13 @@ class HighLevelPolicy(Policy):
     def get_action(self, state):
 
         obstacles = self.WALLS.copy()
+
+        # stores non frightened ghost positions
         g_positions = []
+
+        # stores frightened ghost positions
         f_positions = []
+
         # consider ghosts which are not frightened to be obstacles
         if state["rf"]:
             f_positions.append(state["r"])
@@ -71,6 +76,8 @@ class HighLevelPolicy(Policy):
                 closest_path = path
                 if closest_d <= 1:
                     break
+
+        # only chases frightened ghost if it's within certain distance
         if closest_d and closest_d <= state["dt"]:
             return self.ACTIONS.index(
                 tuple(np.subtract(closest_path[1], closest_path[0]))
@@ -89,6 +96,7 @@ class HighLevelPolicy(Policy):
             path = self.astar_ghost(obstacles, state["pac"], g_position)
             if not path or len(path) - 1 <= self.NT:
                 nearby = True
+                # break
         print("nearby:", nearby)
         positions = np.argwhere(state["power_pellets"])
         closest_d = None
@@ -104,10 +112,13 @@ class HighLevelPolicy(Policy):
                 if closest_d <= 1:
                     break
         if closest_d:
+            # moves towards nearby power pellet
+            # potential bug - still moves towards power pellet even if ghost is in path
             if closest_d > 1 or nearby:
                 return self.ACTIONS.index(
                     tuple(np.subtract(closest_path[1], closest_path[0]))
                 )
+            # waits until ghost approaches
             else:
                 return self.ACTIONS.index((0, 0))
 
