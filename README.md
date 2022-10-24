@@ -12,31 +12,44 @@ To run the PacBot game code as a gym environment (which is the standard interfac
 
 Optional: Activate a virtual environment. The purpose of this is to avoid installing packages globally and have the correct
 versions of packages specific to your project. If you have multiple python projects on your computer, this is a godsend.
-The following commands create a virtual environment called 'env' and activates it:
+The following commands create a virtual environment called 'env':
 
 ```
 python -m venv env
+```
+
+In order to activate the environment:
+
+Windows -
+
+```
 env\Scripts\activate
+```
+
+Mac/Linux -
+
+```
+source env/bin/activate
 ```
 
 Next, cd into the newly cloned git repository folder and install all package dependencies defined in requirements.txt:
 
 `pip install -r requirements.txt`
 
-A demo usage of the gym environment is in gym_simulator/gym_runner.py and can be run with (after you cd into gym_simulator):
+A demo usage of the gym environment is in gym_simulator/run_high_level.py and can be run with:
 
 `python run_high_level.py`
 
-The demo takes input by keyboard input followed by an enter
+This will run whatever policy is being used in the run_high_level script.
+
+The demo takes the following inputs:
 
 q = quit
 
-w = up
+space = pause/unpause
 
-a = left
+If you run:
 
-s = down
+`python run_gym.py`
 
-d = right
-
-other = stay
+You can pretty much play our simulator's version of pacman. You can use WASD to move the pacman, q to quit, and any other key to make the pacman stay still.
