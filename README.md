@@ -10,6 +10,10 @@ To run the PacBot game code as a gym environment (which is the standard interfac
 
 `git clone https://github.com/princeton-robotics-club/Pacbot-High-Level.git`
 
+Next, cd into the repository:
+
+`cd Pacbot-High-Level`
+
 Optional: Activate a virtual environment. The purpose of this is to avoid installing packages globally and have the correct
 versions of packages specific to your project. If you have multiple python projects on your computer, this is a godsend.
 The following commands create a virtual environment called 'env':
