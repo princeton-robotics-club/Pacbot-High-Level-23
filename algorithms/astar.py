@@ -16,7 +16,7 @@ class Node:
         return self.position == other.position
 
 
-def astar(maze, start, end):
+def astar(maze, start, end, state=None):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
 
     start = tuple(start)
