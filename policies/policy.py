@@ -10,5 +10,18 @@ class Policy:
         self.WALLS = np.logical_or(np.array(grid) == I, np.array(grid) == n, dtype=bool)
         self.ACTIONS = [(-1, 0), (0, -1), (0, 0), (0, 1), (1, 0)]
 
+    # state is a dict with keys:
+    #    pellets:       height x width
+    #    power_pellets: height x width
+    #    pac:           (row, col)
+    #    r:             (row, col)
+    #    b:             (row, col)
+    #    o:             (row, col)
+    #    p:             (row, col)
+    #    rf:            bool
+    #    bf:            bool
+    #    of:            bool
+    #    pf:            bool
+    #    dt:            distance threshold (in cells)
     def get_action(self, state):
         raise NotImplementedError()

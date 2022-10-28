@@ -1,5 +1,4 @@
 import numpy as np
-from simulator.game_engine.grid import grid
 from simulator.game_engine.variables import *
 from algorithms.astar import astar
 from policies.policy import Policy
@@ -9,9 +8,9 @@ class HighLevelPolicy(Policy):
     NT = 3
 
     # helper method to astar to a ghost, which is technically a barrier in maze
-    def astar_ghost(self, maze, start, end):
+    def astar_ghost(self, maze, start, end, state=None):
         maze[end] = False
-        path = astar(maze, start, end)
+        path = astar(maze, start, end, state)
         maze[end] = True
         return path
 
@@ -68,7 +67,7 @@ class HighLevelPolicy(Policy):
         closest_path = None
         for f_position in f_positions:
             print("pathfinding to frightened ghost")
-            path = self.astar_ghost(obstacles, state["pac"], f_position)
+            path = self.astar_ghost(obstacles, state["pac"], f_position, state)
             if not path or len(path) < 2:
                 continue
             if closest_d is None or closest_d > len(path) - 1:
@@ -93,7 +92,7 @@ class HighLevelPolicy(Policy):
             if self.WALLS[g_position]:
                 continue
             print("pathfinding to ghost")
-            path = self.astar_ghost(obstacles, state["pac"], g_position)
+            path = self.astar_ghost(obstacles, state["pac"], g_position, state)
             if not path or len(path) - 1 <= self.NT:
                 nearby = True
                 # break
@@ -103,7 +102,7 @@ class HighLevelPolicy(Policy):
         closest_path = None
         for position in positions:
             print("pathfinding to power pellet")
-            path = astar(obstacles, state["pac"], position)
+            path = astar(obstacles, state["pac"], position, state)
             if not path or len(path) < 2:
                 continue
             if closest_d is None or closest_d > len(path) - 1:
@@ -129,7 +128,7 @@ class HighLevelPolicy(Policy):
         closest_d = None
         closest_path = None
         for position in positions:
-            path = astar(obstacles, state["pac"], position)
+            path = astar(obstacles, state["pac"], position, state)
             if not path or len(path) < 2:
                 continue
             if closest_d is None or closest_d > len(path) - 1:
