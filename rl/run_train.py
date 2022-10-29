@@ -2,9 +2,11 @@ from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.env_util import make_vec_env
 
-from simulator.gym_wrappers import PacBotEnv
-
 import sys
+
+sys.path.append("../")
+
+from simulator.gym_wrappers import PacBotEnv
 
 if __name__ == "__main__":
     assert len(sys.argv) == 2, "must supply algorithm argument (either DQN or PPO)"

@@ -1,7 +1,9 @@
 from stable_baselines3 import DQN, PPO
-from simulator.gym_wrappers import PacBotEnv
 
 import sys
+sys.path.append('../')
+
+from simulator.gym_wrappers import PacBotEnv
 
 import time
 
