@@ -22,6 +22,7 @@ if __name__ == "__main__":
     env = PacBotEnv(speed=SPEED)
     envs = make_vec_env(lambda: env, n_envs=NUM_ENVS)  # vectorized env
 
+    # detects whether or not we have a saved model
     try:
         if ALGORITHM == "DQN":
             model = DQN.load(FINAL_MODEL_NAME, envs)
@@ -35,6 +36,7 @@ if __name__ == "__main__":
         elif ALGORITHM == "PPO":
             model = PPO("MlpPolicy", envs, verbose=0, tensorboard_log="logs")
 
+    # saves progress at regular intervals
     checkpoint_callback = CheckpointCallback(
         save_freq=STEPS_PER_CHECKPOINT, save_path="checkpoints", name_prefix="mlp"
     )
