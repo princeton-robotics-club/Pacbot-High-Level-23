@@ -5,6 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 from replay_buffer import *
 from dqn import DQN
 import argparse
+from simulator.gym_wrappers import PacBotEnv
 
 
 class Runner:
@@ -14,10 +15,11 @@ class Runner:
         self.number = number
         self.seed = seed
 
-        self.env = gym.make(env_name)
-        self.env_evaluate = gym.make(
-            env_name
-        )  # When evaluating the policy, we need to rebuild an environment
+        self.env = PacBotEnv()  # gym.make(env_name)
+        self.env_evaluate = PacBotEnv()
+        # self.env_evaluate = gym.make(
+        #     env_name
+        # )  # When evaluating the policy, we need to rebuild an environment
         self.env.seed(seed)
         self.env.action_space.seed(seed)
         self.env_evaluate.seed(seed)
