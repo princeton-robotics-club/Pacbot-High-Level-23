@@ -131,6 +131,7 @@ class PacBotEnv(gym.Env):
         self.game_state.unpause()
         self.running_score = 0
         self.prev_reward = 0
+        self.orientation = 2
         self.prev_done = False
         self.num_lives = self.game_state.lives
         return self._get_state()
@@ -169,19 +170,43 @@ class PacBotEnv(gym.Env):
         old_pac_pos = game_state.pacbot.pos # (row, col)
 
         if action == self.UP:
-            new_pac_pos = (old_pac_pos[0] - 1, old_pac_pos[1])
+            # If facing same way
+            if ((self.orientation) % 2 == 0):
+                new_pac_pos = (old_pac_pos[0] - 1, old_pac_pos[1])
+            else:
+                # Turn and stay
+                self.orientation = 0
+                new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         elif action == self.LEFT:
-            new_pac_pos = (old_pac_pos[0], old_pac_pos[1] - 1)
+            # If facing same way
+            if ((self.orientation) % 2 == 1):
+                new_pac_pos = (old_pac_pos[0], old_pac_pos[1] - 1)
+            else:
+                # Turn and stay
+                self.orientation = 3
+                new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         elif action == self.STAY:
             new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         elif action == self.RIGHT:
-            new_pac_pos = (old_pac_pos[0], old_pac_pos[1] + 1)
+            # If facing same way
+            if ((self.orientation) % 2 == 1):
+                new_pac_pos = (old_pac_pos[0], old_pac_pos[1] + 1)
+            else:
+                # Turn and stay
+                self.orientation = 1
+                new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         elif action == self.DOWN:
-            new_pac_pos = (old_pac_pos[0] + 1, old_pac_pos[1])
+            # If facing same way
+            if ((self.orientation) % 2 == 0):
+                new_pac_pos = (old_pac_pos[0] + 1, old_pac_pos[1])
+            else:
+                # Turn and stay
+                self.orientation = 2
+                new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         else:
             raise ValueError("Received invalid action={} which is not part of the action space.".format(action))
@@ -252,6 +277,7 @@ class PacBotEnv(gym.Env):
         print(f'o - dir: {state[STATE_VALUES.index("o_dir")]}, frightened: {state[STATE_VALUES.index("o_frightened")]}, frightened_counter: {state[STATE_VALUES.index("o_frightened_counter")]}')
         print(f'b - dir: {state[STATE_VALUES.index("b_dir")]}, frightened: {state[STATE_VALUES.index("b_frightened")]}, frightened_counter: {state[STATE_VALUES.index("b_frightened_counter")]}')
         print(f'reward: {self.prev_reward}, done: {self.prev_done}')
+        print(f'orientation: {self.orientation}')
         return grid
     
     def close(self):
