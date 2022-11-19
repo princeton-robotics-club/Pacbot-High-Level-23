@@ -117,11 +117,12 @@ class DQN(object):
 
     def save_checkpoint(self, netid: str, algo_name: str):
         Path(f"checkpoints/{netid}").mkdir(parents=True, exist_ok=True)
-        last_ind = max(
-            int(f.split(".")[0].replace(f"{algo_name}_", ""))
+        file_numbers = [int(f.split(".")[0].replace(f"{algo_name}_", ""))
             for f in os.listdir(os.path.join("checkpoints", netid))
-            if algo_name in f
-        )
+            if algo_name in f]
+        last_ind = 0
+        if file_numbers:
+            last_ind = max(file_numbers)
 
         torch.save(
             {
