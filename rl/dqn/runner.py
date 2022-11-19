@@ -5,6 +5,9 @@ from torch.utils.tensorboard import SummaryWriter
 from replay_buffer import *
 from dqn import DQN
 import argparse
+import sys
+
+sys.path.append("../../")
 from simulator.gym_wrappers import PacBotEnv
 
 
@@ -30,8 +33,8 @@ class Runner:
         self.args.state_dim = self.env.observation_space.shape[0]
         self.args.action_dim = self.env.action_space.n
         self.args.episode_limit = (
-            self.env._max_episode_steps
-        )  # Maximum number of steps per episode
+            5000  # self.env._max_episode_steps  # Maximum number of steps per episode
+        )
         print("env={}".format(self.env_name))
         print("state_dim={}".format(self.args.state_dim))
         print("action_dim={}".format(self.args.action_dim))

@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import copy
 from network import Dueling_Net, Net
-from rl.dqn.replay_buffer import ReplayBuffer
+from replay_buffer import ReplayBuffer
 
 
 class DQN(object):
