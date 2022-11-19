@@ -3,6 +3,8 @@ import numpy as np
 import copy
 from network import Dueling_Net, Net
 from replay_buffer import ReplayBuffer
+import os
+from pathlib import Path
 
 
 class DQN(object):
@@ -112,3 +114,19 @@ class DQN(object):
         )
         for p in self.optimizer.param_groups:
             p["lr"] = lr_now
+
+    def save_checkpoint(self, netid: str, algo_name: str):
+        Path(f"checkpoints/{netid}").mkdir(parents=True, exist_ok=True)
+        last_ind = max(
+            int(f.split(".")[0].replace(f"{algo_name}_", ""))
+            for f in os.listdir(os.path.join("checkpoints", netid))
+            if algo_name in f
+        )
+
+        torch.save(
+            {
+                "model_state_dict": self.net.state_dict(),
+                "optimizer_state_dict": self.optimizer.state_dict(),
+            },
+            os.path.join("checkpoints", netid, f"{algo_name}_{last_ind + 1}.pth"),
+        )

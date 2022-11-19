@@ -89,6 +89,8 @@ class Runner:
                 self.args.epsilon_init - self.args.epsilon_min
             ) / self.args.epsilon_decay_steps
 
+        self.last_checkpoint_ind = 0
+
     def run(
         self,
     ):
@@ -162,6 +164,11 @@ class Runner:
             evaluate_reward += episode_reward
         self.agent.net.train()
         evaluate_reward /= self.args.evaluate_times
+        if self.evaluate_rewards:
+            if evaluate_reward > self.evaluate_rewards[self.last_checkpoint_ind]:
+                self.last_checkpoint_ind = len(self.evaluate_rewards)
+                self.agent.save_checkpoint(self.args.netid, self.algorithm)
+
         self.evaluate_rewards.append(evaluate_reward)
         print(
             "total_steps:{} \t evaluate_reward:{} \t epsilon：{}".format(
@@ -260,6 +267,9 @@ if __name__ == "__main__":
         type=bool,
         default=True,
         help="Whether to use n_steps Q-learning",
+    )
+    parser.add_argument(
+        "--netid", type=str, default=False, help="Name for neural network checkpoints"
     )
 
     args = parser.parse_args()
