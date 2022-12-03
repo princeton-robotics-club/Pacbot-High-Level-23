@@ -132,6 +132,7 @@ class PacBotEnv(gym.Env):
         self.running_score = 0
         self.prev_reward = 0
         self.orientation = 2
+        self.turn_time = 0
         self.prev_done = False
         self.num_lives = self.game_state.lives
         return self._get_state()
@@ -175,7 +176,11 @@ class PacBotEnv(gym.Env):
                 new_pac_pos = (old_pac_pos[0] - 1, old_pac_pos[1])
             else:
                 # Turn and stay
-                self.orientation = 0
+                if (self.turn_time >= 6):
+                    self.orientation = 0
+                    self.turn_time = 0
+                else:
+                    self.turn_time += 1
                 new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         elif action == self.LEFT:
@@ -184,7 +189,11 @@ class PacBotEnv(gym.Env):
                 new_pac_pos = (old_pac_pos[0], old_pac_pos[1] - 1)
             else:
                 # Turn and stay
-                self.orientation = 3
+                if (self.turn_time >= 6):
+                    self.orientation = 3
+                    self.turn_time = 0
+                else:
+                    self.turn_time += 1
                 new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         elif action == self.STAY:
@@ -196,7 +205,11 @@ class PacBotEnv(gym.Env):
                 new_pac_pos = (old_pac_pos[0], old_pac_pos[1] + 1)
             else:
                 # Turn and stay
-                self.orientation = 1
+                if (self.turn_time >= 6):
+                    self.orientation = 1
+                    self.turn_time = 0
+                else:
+                    self.turn_time += 1
                 new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         elif action == self.DOWN:
@@ -205,7 +218,11 @@ class PacBotEnv(gym.Env):
                 new_pac_pos = (old_pac_pos[0] + 1, old_pac_pos[1])
             else:
                 # Turn and stay
-                self.orientation = 2
+                if (self.turn_time >= 6):
+                    self.orientation = 2
+                    self.turn_time = 0
+                else:
+                    self.turn_time += 1
                 new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         else:
@@ -278,6 +295,7 @@ class PacBotEnv(gym.Env):
         print(f'b - dir: {state[STATE_VALUES.index("b_dir")]}, frightened: {state[STATE_VALUES.index("b_frightened")]}, frightened_counter: {state[STATE_VALUES.index("b_frightened_counter")]}')
         print(f'reward: {self.prev_reward}, done: {self.prev_done}')
         print(f'orientation: {self.orientation}')
+        print(f'turn_time: {self.turn_time}')
         return grid
     
     def close(self):
