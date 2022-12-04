@@ -269,7 +269,7 @@ if __name__ == "__main__":
         help="Whether to use n_steps Q-learning",
     )
     parser.add_argument(
-        "--netid", type=str, default=False, help="Name for neural network checkpoints"
+        "--netid", type=str, required=True, help="Name for neural network checkpoints"
     )
 
     args = parser.parse_args()
