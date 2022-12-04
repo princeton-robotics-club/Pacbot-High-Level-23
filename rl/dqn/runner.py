@@ -5,6 +5,10 @@ from torch.utils.tensorboard import SummaryWriter
 from replay_buffer import *
 from dqn import DQN
 import argparse
+import sys
+
+sys.path.append("../../")
+from simulator.gym_wrappers import PacBotEnv
 
 
 class Runner:
@@ -14,10 +18,11 @@ class Runner:
         self.number = number
         self.seed = seed
 
-        self.env = gym.make(env_name)
-        self.env_evaluate = gym.make(
-            env_name
-        )  # When evaluating the policy, we need to rebuild an environment
+        self.env = PacBotEnv()  # gym.make(env_name)
+        self.env_evaluate = PacBotEnv()
+        # self.env_evaluate = gym.make(
+        #     env_name
+        # )  # When evaluating the policy, we need to rebuild an environment
         self.env.seed(seed)
         self.env.action_space.seed(seed)
         self.env_evaluate.seed(seed)
@@ -28,8 +33,8 @@ class Runner:
         self.args.state_dim = self.env.observation_space.shape[0]
         self.args.action_dim = self.env.action_space.n
         self.args.episode_limit = (
-            self.env._max_episode_steps
-        )  # Maximum number of steps per episode
+            5000  # self.env._max_episode_steps  # Maximum number of steps per episode
+        )
         print("env={}".format(self.env_name))
         print("state_dim={}".format(self.args.state_dim))
         print("action_dim={}".format(self.args.action_dim))
@@ -83,6 +88,8 @@ class Runner:
             self.epsilon_decay = (
                 self.args.epsilon_init - self.args.epsilon_min
             ) / self.args.epsilon_decay_steps
+
+        self.last_checkpoint_ind = 0
 
     def run(
         self,
@@ -157,6 +164,11 @@ class Runner:
             evaluate_reward += episode_reward
         self.agent.net.train()
         evaluate_reward /= self.args.evaluate_times
+        if self.evaluate_rewards:
+            if evaluate_reward > self.evaluate_rewards[self.last_checkpoint_ind]:
+                self.last_checkpoint_ind = len(self.evaluate_rewards)
+                self.agent.save_checkpoint(self.args.netid, self.algorithm)
+
         self.evaluate_rewards.append(evaluate_reward)
         print(
             "total_steps:{} \t evaluate_reward:{} \t epsilon：{}".format(
@@ -255,6 +267,9 @@ if __name__ == "__main__":
         type=bool,
         default=True,
         help="Whether to use n_steps Q-learning",
+    )
+    parser.add_argument(
+        "--netid", type=str, default=False, help="Name for neural network checkpoints"
     )
 
     args = parser.parse_args()
