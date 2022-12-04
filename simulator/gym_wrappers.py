@@ -176,7 +176,7 @@ class PacBotEnv(gym.Env):
                 new_pac_pos = (old_pac_pos[0] - 1, old_pac_pos[1])
             else:
                 # Turn and stay
-                if (self.turn_time >= 6):
+                if (self.turn_time >= 5):
                     self.orientation = 0
                     self.turn_time = 0
                 else:
@@ -189,7 +189,7 @@ class PacBotEnv(gym.Env):
                 new_pac_pos = (old_pac_pos[0], old_pac_pos[1] - 1)
             else:
                 # Turn and stay
-                if (self.turn_time >= 6):
+                if (self.turn_time >= 5):
                     self.orientation = 3
                     self.turn_time = 0
                 else:
@@ -205,7 +205,7 @@ class PacBotEnv(gym.Env):
                 new_pac_pos = (old_pac_pos[0], old_pac_pos[1] + 1)
             else:
                 # Turn and stay
-                if (self.turn_time >= 6):
+                if (self.turn_time >= 5):
                     self.orientation = 1
                     self.turn_time = 0
                 else:
@@ -218,7 +218,7 @@ class PacBotEnv(gym.Env):
                 new_pac_pos = (old_pac_pos[0] + 1, old_pac_pos[1])
             else:
                 # Turn and stay
-                if (self.turn_time >= 6):
+                if (self.turn_time >= 5):
                     self.orientation = 2
                     self.turn_time = 0
                 else:

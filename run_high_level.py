@@ -56,7 +56,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     visualizer = Visualizer()
-    env = PacBotEnv(speed=0.8)
+    env = PacBotEnv(speed=0.5)
     obs = env.reset()
     grid = env.render()
     visualizer.draw_grid(grid)
