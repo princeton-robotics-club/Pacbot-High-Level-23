@@ -274,8 +274,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    env_names = ["CartPole-v1", "LunarLander-v2"]
-    env_index = 1
+    # env_names = ["CartPole-v1", "LunarLander-v2"]
+    # env_index = 1
+    env_name = "PacBotEnv"
     for seed in [0, 10, 100]:
-        runner = Runner(args=args, env_name=env_names[env_index], number=1, seed=seed)
+        runner = Runner(args=args, env_name=env_name, number=1, seed=seed)
         runner.run()
