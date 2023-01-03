@@ -10,11 +10,11 @@ from .game_engine.variables import *
 """
 game state is [
     mode, lives, cherry, frightened_timer,
-    pacman_x, pacman_y, pacman_direction,                                                                  # x, y = row, col
-    red_ghost_x, red_ghost_y, red_direction, red_ghost_frightened, red_frightened_counter,
-    pink_ghost_x, pink_ghost_y, pink_direction, pink_ghost_frightened, pink_frightened_counter,
-    orange_ghost_x, orange_ghost_y, orange_direction, orange_ghost_frightened, orange_frightened_counter,
-    blue_ghost_x, blue_ghost_y, blue_direction, blue_ghost_frightened, blue_frightened_counter, orientation
+    pacman_x, pacman_y,                                                                  # x, y = row, col
+    red_ghost_x, red_ghost_y, red_ghost_frightened, red_frightened_counter,
+    pink_ghost_x, pink_ghost_y, pink_ghost_frightened, pink_frightened_counter,
+    orange_ghost_x, orange_ghost_y, orange_ghost_frightened, orange_frightened_counter,
+    blue_ghost_x, blue_ghost_y, blue_ghost_frightened, blue_frightened_counter, orientation
     pellet_1, ..., pellet_240,                                                                             # whether the corresponding pellet is present
     power_pellet_1, ..., power_pellet_4,                                                                   # whether the corresponding power pellet is present
 ]
@@ -62,25 +62,20 @@ class PacBotEnv(gym.Env):
         "frightened_timer",
         "pac_x",
         "pac_y",
-        "pac_dir",
         "r_x",
         "r_y",
-        "r_dir",
         "r_frightened",
         "r_frightened_counter",
         "p_x",
         "p_y",
-        "p_dir",
         "p_frightened",
         "p_frightened_counter",
         "o_x",
         "o_y",
-        "o_dir",
         "o_frightened",
         "o_frightened_counter",
         "b_x",
         "b_y",
-        "b_dir",
         "b_frightened",
         "b_frightened_counter",
         "orientation",
@@ -131,11 +126,9 @@ class PacBotEnv(gym.Env):
 
         state[STATE_VALUES.index("pac_x")] = game_state.pacbot.pos[0]
         state[STATE_VALUES.index("pac_y")] = game_state.pacbot.pos[1]
-        state[STATE_VALUES.index("pac_dir")] = game_state.pacbot.direction
 
         state[STATE_VALUES.index("r_x")] = game_state.red.pos["current"][0]
         state[STATE_VALUES.index("r_y")] = game_state.red.pos["current"][1]
-        state[STATE_VALUES.index("r_dir")] = game_state.red.direction
         state[STATE_VALUES.index("r_frightened")] = (
             1 if game_state.red.frightened_counter > 0 else 0
         )
@@ -145,7 +138,6 @@ class PacBotEnv(gym.Env):
 
         state[STATE_VALUES.index("p_x")] = game_state.pink.pos["current"][0]
         state[STATE_VALUES.index("p_y")] = game_state.pink.pos["current"][1]
-        state[STATE_VALUES.index("p_dir")] = game_state.pink.direction
         state[STATE_VALUES.index("p_frightened")] = (
             1 if game_state.pink.frightened_counter > 0 else 0
         )
@@ -155,7 +147,6 @@ class PacBotEnv(gym.Env):
 
         state[STATE_VALUES.index("o_x")] = game_state.orange.pos["current"][0]
         state[STATE_VALUES.index("o_y")] = game_state.orange.pos["current"][1]
-        state[STATE_VALUES.index("o_dir")] = game_state.orange.direction
         state[STATE_VALUES.index("o_frightened")] = (
             1 if game_state.orange.frightened_counter > 0 else 0
         )
@@ -165,7 +156,6 @@ class PacBotEnv(gym.Env):
 
         state[STATE_VALUES.index("b_x")] = game_state.blue.pos["current"][0]
         state[STATE_VALUES.index("b_y")] = game_state.blue.pos["current"][1]
-        state[STATE_VALUES.index("b_dir")] = game_state.blue.direction
         state[STATE_VALUES.index("b_frightened")] = (
             1 if game_state.blue.frightened_counter > 0 else 0
         )
@@ -373,18 +363,17 @@ class PacBotEnv(gym.Env):
         print(
             f'Mode: {state[STATE_VALUES.index("mode")]}, Lives: {state[STATE_VALUES.index("lives")]}, Cherry: {state[STATE_VALUES.index("cherry")]}, Frightened Timer: {state[STATE_VALUES.index("frightened_timer")]}'
         )
-        print(f'a - dir: {state[STATE_VALUES.index("pac_dir")]}')
         print(
-            f'r - dir: {state[STATE_VALUES.index("r_dir")]}, frightened: {state[STATE_VALUES.index("r_frightened")]}, frightened_counter: {state[STATE_VALUES.index("r_frightened_counter")]}'
+            f'r - frightened: {state[STATE_VALUES.index("r_frightened")]}, frightened_counter: {state[STATE_VALUES.index("r_frightened_counter")]}'
         )
         print(
-            f'p - dir: {state[STATE_VALUES.index("p_dir")]}, frightened: {state[STATE_VALUES.index("p_frightened")]}, frightened_counter: {state[STATE_VALUES.index("p_frightened_counter")]}'
+            f'p - frightened: {state[STATE_VALUES.index("p_frightened")]}, frightened_counter: {state[STATE_VALUES.index("p_frightened_counter")]}'
         )
         print(
-            f'o - dir: {state[STATE_VALUES.index("o_dir")]}, frightened: {state[STATE_VALUES.index("o_frightened")]}, frightened_counter: {state[STATE_VALUES.index("o_frightened_counter")]}'
+            f'o - frightened: {state[STATE_VALUES.index("o_frightened")]}, frightened_counter: {state[STATE_VALUES.index("o_frightened_counter")]}'
         )
         print(
-            f'b - dir: {state[STATE_VALUES.index("b_dir")]}, frightened: {state[STATE_VALUES.index("b_frightened")]}, frightened_counter: {state[STATE_VALUES.index("b_frightened_counter")]}'
+            f'b - frightened: {state[STATE_VALUES.index("b_frightened")]}, frightened_counter: {state[STATE_VALUES.index("b_frightened_counter")]}'
         )
         print(f"reward: {self.prev_reward}, done: {self.prev_done}")
         return grid

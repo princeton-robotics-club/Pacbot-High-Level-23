@@ -5,6 +5,10 @@ from network import Dueling_Net, Net
 from replay_buffer import ReplayBuffer
 import os
 from pathlib import Path
+import sys
+
+sys.path.append("../")
+from helpers import load_nnet, generate_mask
 
 
 class DQN(object):
@@ -41,13 +45,16 @@ class DQN(object):
         self.args = args
 
     def choose_action(self, state, epsilon):
+        mask = generate_mask(state)
         if np.random.uniform() > epsilon:
             with torch.no_grad():
                 state = torch.unsqueeze(torch.tensor(state, dtype=torch.float), 0)
-                q = self.net(state)
+                q: torch.Tensor = self.net(state)
+                q = q.flatten().sub(q.min().item()) * torch.from_numpy(mask)
                 action = q.argmax(dim=-1).item()
         else:
-            action = np.random.randint(0, self.action_dim)
+            action = np.random.choice(mask.nonzero())
+            # action = np.random.randint(0, self.action_dim)
         return action
 
     def learn(self, replay_buffer: ReplayBuffer, total_steps):
@@ -135,3 +142,6 @@ class DQN(object):
             },
             os.path.join("checkpoints", netid, f"{algo_name}_{last_ind + 1}.pth"),
         )
+
+    def load_checkpoint(self, filepath: str):
+        load_nnet(filepath, self.net, self.optimizer)
