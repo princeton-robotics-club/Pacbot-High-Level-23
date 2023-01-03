@@ -1,35 +1,41 @@
-class Node:
-    """A node class for A* Pathfinding"""
+from typing import List
+from .node import Node
 
-    def __init__(self, parent=None, position=None):
-        self.parent = parent
-        self.position = position
+# FOR TESTING
+# from node import Node
+# import sys
 
-        # estimated cost of getting to this node
-        self.g = 0
-        # estimated cost of getting to destination from this node
-        self.h = 0
-        # estimated cost of entire path
-        self.f = 0
+# sys.path.append("../")
+from constants import TURN_TICKS, MOVE_TICKS, UP
 
-    def __eq__(self, other):
-        return self.position == other.position
-
-
-def astar(maze, start, end, state=None):
+# state is a dict with keys:
+#    pellets:       height x width
+#    power_pellets: height x width
+#    pac:           (row, col)
+#    r:             (row, col)
+#    b:             (row, col)
+#    o:             (row, col)
+#    p:             (row, col)
+#    rf:            bool
+#    bf:            bool
+#    of:            bool
+#    pf:            bool
+#    dt:            distance threshold (in cells)
+#    orientation:   UP, LEFT, RIGHT, DOWN
+def astar(maze, start, end, state=None, heuristic=None):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
 
     start = tuple(start)
     end = tuple(end)
 
     # Create start and end node
-    start_node = Node(None, start)
+    start_node = Node(None, start, state["orientation"])
     start_node.g = start_node.h = start_node.f = 0
     end_node = Node(None, end)
     end_node.g = end_node.h = end_node.f = 0
 
     # Initialize both open and closed list
-    open_list = []
+    open_list: List[Node] = []
     closed_list = []
 
     # Add the start node
@@ -60,8 +66,12 @@ def astar(maze, start, end, state=None):
             return path[::-1]  # Return reversed path
 
         # Generate children
-        children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:  # Adjacent squares
+        children: List[Node] = []
+        curr_orientation = current_node.pacbot_orientation % 2
+        turned = False
+        for direction, new_position in enumerate(
+            [(-1, 0), (0, -1), (1, 0), (0, 1)]
+        ):  # Adjacent squares
 
             # Get node position
             node_position = (
@@ -82,11 +92,19 @@ def astar(maze, start, end, state=None):
             if maze[node_position[0]][node_position[1]] != 0:
                 continue
 
+            new_node = None
             # Create new node
-            new_node = Node(current_node, node_position)
+            if curr_orientation == direction % 2:
+                new_node = Node(
+                    current_node, node_position, current_node.pacbot_orientation
+                )
+            elif not turned:
+                new_node = Node(current_node, current_node.position, direction)
+                turned = True
 
             # Append
-            children.append(new_node)
+            if new_node:
+                children.append(new_node)
 
         # Loop through children
         for child in children:
@@ -103,10 +121,17 @@ def astar(maze, start, end, state=None):
                 continue
 
             # Create the f, g, and h values
-            child.g = current_node.g + 1
+            child.g = current_node.g + (
+                MOVE_TICKS
+                if child.pacbot_orientation % 2 == curr_orientation
+                else TURN_TICKS
+            )
             # current heuristic is euclidean distance
-            child.h = ((child.position[0] - end_node.position[0]) ** 2) + (
-                (child.position[1] - end_node.position[1]) ** 2
+            child.h = (
+                heuristic(child, end_node)
+                if heuristic
+                else ((child.position[0] - end_node.position[0]) ** 2)
+                + ((child.position[1] - end_node.position[1]) ** 2)
             )
             child.f = child.g + child.h
 
@@ -126,6 +151,7 @@ def astar(maze, start, end, state=None):
 
             # Add the child to the open list
             open_list.append(child)
+    return []
 
 
 def main():
@@ -133,19 +159,33 @@ def main():
     maze = [
         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 1, 1, 1, 0, 0, 0, 0, 0],
+        [1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     ]
 
     start = (0, 0)
     end = (9, 6)
-    path = astar(maze, start, end)
+    path = astar(maze, start, end, {"orientation": UP})
+    print(path)
+    maze = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+        [0, 1, 0, 0, 1, 1, 0, 1, 0, 0],
+        [0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+        [0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+        [0, 0, 1, 1, 1, 0, 0, 1, 0, 0],
+        [1, 0, 1, 0, 0, 0, 0, 1, 1, 0],
+        [0, 0, 1, 0, 1, 0, 1, 1, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+    ]
+    path = astar(maze, start, end, {"orientation": UP})
     print(path)
 
 

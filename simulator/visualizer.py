@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from constants import UP, DOWN, LEFT, RIGHT
 import sys
 import time
 
@@ -66,7 +67,7 @@ class Visualizer(object):
             "%": power_pellet,
             "f": ghost_frightened,
         }
-        self.angles = {0: 90, 1: 180, 3: 0, 4: 270}
+        self.angles = {UP: 90, LEFT: 180, RIGHT: 0, DOWN: 270}
         self.curr_angle = 90
 
     def draw_grid(self, grid, orientation):

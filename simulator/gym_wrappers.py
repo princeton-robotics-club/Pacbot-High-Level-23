@@ -2,6 +2,7 @@ import numpy as np
 import gym
 from gym import spaces
 
+from constants import *
 from .game_engine.gameState import GameState
 from .game_engine.grid import grid
 from .game_engine.variables import *
@@ -35,14 +36,7 @@ class PacBotEnv(gym.Env):
     WIN_REWARD = 100
     STEP_REWARD = -0.1
 
-    UP = 0
-    LEFT = 1
-    STAY = 2
-    RIGHT = 3
-    DOWN = 4
-    FACE_HORIZ = 5
-    FACE_VERT = 6
-    NUM_ACTIONS = 7
+    NUM_ACTIONS = 9
 
     GRID_HEIGHT, GRID_WIDTH = np.shape(grid)
 
@@ -108,15 +102,16 @@ class PacBotEnv(gym.Env):
             dtype=np.float32,
         )
 
-        self.next_step_rate = int(speed * ticks_per_update)
-        # TODO will adjust this based on the robot's actual stats
-        self.next_step_rate = 6  # makes pacbot twice as fast as ghosts
+        # self.next_step_rate = int(speed * ticks_per_update)
+        # # TODO will adjust this based on the robot's actual stats
+        # MOVED THIS TO CONSTANTS
+        # self.next_step_rate = 6  # makes pacbot twice as fast as ghosts
 
         self.game_state = GameState()
 
         self.running_score = 0
         self.prev_reward = 0
-        self.orientation = self.UP
+        self.orientation = UP
         self.prev_done = False
         self.num_lives = self.game_state.lives
         self.log = log
@@ -200,7 +195,7 @@ class PacBotEnv(gym.Env):
         self.prev_reward = 0
         self.prev_done = False
         self.num_lives = self.game_state.lives
-        self.orientation = self.UP
+        self.orientation = UP
         return self._get_state()
 
     def is_pacbot_horizontal(self):
@@ -216,50 +211,63 @@ class PacBotEnv(gym.Env):
         old_pac_pos = game_state.pacbot.pos  # (row, col)
         orientation_changed = False
 
-        if action == self.UP:
+        if action == UP:
             orientation_changed = self.is_pacbot_horizontal()
             new_pac_pos = (old_pac_pos[0] - 1, old_pac_pos[1])
 
-        elif action == self.LEFT:
+        elif action == LEFT:
             orientation_changed = not self.is_pacbot_horizontal()
             new_pac_pos = (old_pac_pos[0], old_pac_pos[1] - 1)
 
-        elif action == self.STAY:
+        elif action == STAY:
             new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
-        elif action == self.RIGHT:
+        elif action == RIGHT:
             orientation_changed = not self.is_pacbot_horizontal()
             new_pac_pos = (old_pac_pos[0], old_pac_pos[1] + 1)
 
-        elif action == self.DOWN:
+        elif action == DOWN:
             orientation_changed = self.is_pacbot_horizontal()
             new_pac_pos = (old_pac_pos[0] + 1, old_pac_pos[1])
 
-        elif action == self.FACE_HORIZ:
-            orientation_changed = not self.is_pacbot_horizontal()
-            new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
-
-        elif action == self.FACE_VERT:
+        elif action == FACE_UP:
             orientation_changed = self.is_pacbot_horizontal()
             new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
+        elif action == FACE_DOWN:
+            orientation_changed = self.is_pacbot_horizontal()
+            new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
+
+        elif action == FACE_LEFT:
+            orientation_changed = not self.is_pacbot_horizontal()
+            new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
+
+        elif action == FACE_RIGHT:
+            orientation_changed = not self.is_pacbot_horizontal()
+            new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
+
         else:
+            print(action == STAY)
             raise ValueError(
                 "Received invalid action={} which is not part of the action space.".format(
                     action
                 )
             )
+        if orientation_changed and action < FACE_UP:
+            raise ValueError("Shouldn't have turned with normal action")
+        elif not orientation_changed and RIGHT < action < STAY:
+            raise ValueError("Should have changed orientation")
 
         # logic to determine how many ticks pass in the engine (changes for turns)
-        ticks_passed = self.next_step_rate
+        ticks_passed = MOVE_TICKS
 
         # handles invalid new positions
         if self.WALL_LOCATIONS[new_pac_pos[0], new_pac_pos[1]] != 0:
             new_pac_pos = old_pac_pos
         elif orientation_changed:
-            ticks_passed += 5 * self.next_step_rate
+            ticks_passed = TURN_TICKS
             new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
-            self.orientation = action
+            self.orientation = action - 4
 
         for _ in range(ticks_passed):
             game_state.next_step(self.log)
