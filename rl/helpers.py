@@ -18,9 +18,9 @@ max_col = len(grid[0])
 
 
 def generate_mask(state):
-    pac_x = state[0]
-    pac_y = state[1]
-    orientation = state[2] % 2
+    pac_x = state[4]
+    pac_y = state[5]
+    orientation = state[22] % 2
     mask = np.ones(9, dtype=np.int64)
     mask[-1 * orientation + 1] = 0
     mask[-1 * orientation + 3] = 0
