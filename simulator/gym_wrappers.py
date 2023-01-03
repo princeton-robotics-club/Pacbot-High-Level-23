@@ -263,7 +263,7 @@ class PacBotEnv(gym.Env):
             self.orientation = action - 4
 
         for _ in range(ticks_passed):
-            game_state.next_step(self.log)
+            game_state.next_step()
             life_lost = self.num_lives != game_state.lives
             done = game_state.game_over
             # prevents advancing ticker if the game stops
