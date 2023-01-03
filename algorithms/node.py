@@ -23,3 +23,6 @@ class Node:
             or other.pacbot_orientation is None
             or self.pacbot_orientation % 2 == other.pacbot_orientation % 2
         )
+
+    def __lt__(self, other: Node):
+        return self.position[0] < other.position[0]

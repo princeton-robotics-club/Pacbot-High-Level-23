@@ -69,7 +69,9 @@ if __name__ == "__main__":
     total_score = 0
     while key != pygame.K_q:
         state = get_state(env, obs)
+        pre = time.time()
         action = policy.get_action(state)
+        print(f"CALC TIME: {time.time() - pre}")
         obs, reward, done, _ = env.step(action)
         grid = env.render()
         visualizer.draw_grid(grid, env.orientation)
@@ -77,7 +79,7 @@ if __name__ == "__main__":
         if done:
             trials += 1
             total_score += env.running_score
-            env.reset()
+            obs = env.reset()
             env.render()
         key = visualizer.wait_ai_control()
         if args.s:

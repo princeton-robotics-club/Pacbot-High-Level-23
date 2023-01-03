@@ -2,7 +2,7 @@ from typing import Callable
 import numpy as np
 from constants import STAY
 from simulator.game_engine.variables import *
-from algorithms.astar import astar
+from algorithms.opt_astar import astar
 from policies.policy import Policy
 
 
@@ -108,11 +108,14 @@ class HighLevelPolicy(Policy):
         # move to it, if it exists and (is further than 1 cell away or a ghost is within NT)
         # wait at it, if it exists and is within 1 cell and a ghost is not within NT cells
         nearby = False
+        closest_ghost_dist = float("inf")
         for g_position in g_positions:
             if self.WALLS[g_position]:
                 continue
             print("pathfinding to ghost")
             path = self.astar_ghost(obstacles, state["pac"], g_position, state)
+            # TODO see if -2 is better since beginning and end node are included
+            closest_ghost_dist = min(closest_ghost_dist, max(len(path) - 1, 0))
             if not path or len(path) - 1 <= self.NT:
                 nearby = True
                 # break

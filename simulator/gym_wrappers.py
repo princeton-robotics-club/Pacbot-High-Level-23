@@ -247,16 +247,19 @@ class PacBotEnv(gym.Env):
             new_pac_pos = (old_pac_pos[0], old_pac_pos[1])
 
         else:
-            print(action == STAY)
             raise ValueError(
                 "Received invalid action={} which is not part of the action space.".format(
                     action
                 )
             )
         if orientation_changed and action < FACE_UP:
-            raise ValueError("Shouldn't have turned with normal action")
+            raise ValueError(
+                f"Shouldn't have turned with normal action\nAction={action}\nOrientation={self.orientation}"
+            )
         elif not orientation_changed and RIGHT < action < STAY:
-            raise ValueError("Should have changed orientation")
+            raise ValueError(
+                f"Should have changed orientation\nAction={action}\nOrientation={self.orientation}"
+            )
 
         # logic to determine how many ticks pass in the engine (changes for turns)
         ticks_passed = MOVE_TICKS
