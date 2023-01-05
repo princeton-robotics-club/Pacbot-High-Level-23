@@ -9,7 +9,7 @@ from .game_engine.variables import *
 
 """
 game state is [
-    mode, lives, cherry, frightened_timer,
+    lives, cherry,
     pacman_x, pacman_y,                                                                  # x, y = row, col
     red_ghost_x, red_ghost_y, red_ghost_frightened, red_frightened_counter,
     pink_ghost_x, pink_ghost_y, pink_ghost_frightened, pink_frightened_counter,
@@ -56,37 +56,55 @@ class PacBotEnv(gym.Env):
     BAD_LOCATIONS = WALL_LOCATIONS + GHOST_SPAWN
 
     STATE_VALUES = [
-        "mode",
-        "lives",
-        "cherry",
-        "frightened_timer",
         "pac_x",
         "pac_y",
+        "orientation",
+        # "mode",
+        "lives",
+        "cherry",
         "r_x",
         "r_y",
         "r_frightened",
-        "r_frightened_counter",
+        # "r_frightened_counter",
         "p_x",
         "p_y",
         "p_frightened",
-        "p_frightened_counter",
+        # "p_frightened_counter",
         "o_x",
         "o_y",
         "o_frightened",
-        "o_frightened_counter",
+        # "o_frightened_counter",
         "b_x",
         "b_y",
         "b_frightened",
-        "b_frightened_counter",
-        "orientation",
+        # "b_frightened_counter",
+        "frightened_timer",
     ]
     STATE_VALUES.extend(["pellet" for i in range(NUM_PELLETS)])
     STATE_VALUES.extend(["power_pellet" for i in range(NUM_POWER_PELLETS)])
+    STATE_VALUE_RANGES = {
+        "lives": (0, 3),
+        "pac_x": (1, 26),
+        "pac_y": (1, 29),
+        "r_x": (1, 26),
+        "r_y": (1, 29),
+        # "r_frightened_counter": (0, 40),
+        "p_x": (1, 26),
+        "p_y": (1, 29),
+        # "p_frightened_counter": (0, 40),
+        "o_x": (1, 26),
+        "o_y": (1, 29),
+        # "o_frightened_counter": (0, 40),
+        "b_x": (1, 26),
+        "b_y": (1, 29),
+        # "b_frightened_counter": (0, 40),
+        "frightened_timer": (0, 40),
+    }
     STATE_SHAPE = np.shape(STATE_VALUES)
     STATE_VALUE_MIN = 0
-    STATE_VALUE_MAX = 40
+    STATE_VALUE_MAX = 1
 
-    def __init__(self, speed=1, log=True):
+    def __init__(self, speed=1, log=True, normalized=False):
         super(PacBotEnv, self).__init__()
 
         self.action_space = spaces.Discrete(self.NUM_ACTIONS)
@@ -110,6 +128,18 @@ class PacBotEnv(gym.Env):
         self.prev_done = False
         self.num_lives = self.game_state.lives
         self.log = log
+        self.normalized = normalized
+        print(self.STATE_VALUES.index("pac_x"))
+        print(self.STATE_VALUES.index("pac_y"))
+        print(self.STATE_VALUES.index("orientation"))
+
+    def normalize_state(self, state):
+        for key, range in self.STATE_VALUE_RANGES.items():
+            prev_value = state[self.STATE_VALUES.index(key)]
+            state[self.STATE_VALUES.index(key)] = (prev_value - range[0]) / (
+                range[1] - range[0]
+            )
+        return state
 
     def _get_state(self):
         game_state = self.game_state
@@ -119,10 +149,9 @@ class PacBotEnv(gym.Env):
 
         state = np.zeros(self.STATE_SHAPE)
 
-        state[STATE_VALUES.index("mode")] = game_state.state
+        # state[STATE_VALUES.index("mode")] = game_state.state
         state[STATE_VALUES.index("lives")] = game_state.lives
         state[STATE_VALUES.index("cherry")] = game_state.cherry
-        state[STATE_VALUES.index("frightened_timer")] = game_state.frightened_counter
 
         state[STATE_VALUES.index("pac_x")] = game_state.pacbot.pos[0]
         state[STATE_VALUES.index("pac_y")] = game_state.pacbot.pos[1]
@@ -132,38 +161,39 @@ class PacBotEnv(gym.Env):
         state[STATE_VALUES.index("r_frightened")] = (
             1 if game_state.red.frightened_counter > 0 else 0
         )
-        state[
-            STATE_VALUES.index("r_frightened_counter")
-        ] = game_state.red.frightened_counter
+        # state[
+        #     STATE_VALUES.index("r_frightened_counter")
+        # ] = game_state.red.frightened_counter
 
         state[STATE_VALUES.index("p_x")] = game_state.pink.pos["current"][0]
         state[STATE_VALUES.index("p_y")] = game_state.pink.pos["current"][1]
         state[STATE_VALUES.index("p_frightened")] = (
             1 if game_state.pink.frightened_counter > 0 else 0
         )
-        state[
-            STATE_VALUES.index("p_frightened_counter")
-        ] = game_state.pink.frightened_counter
+        # state[
+        #     STATE_VALUES.index("p_frightened_counter")
+        # ] = game_state.pink.frightened_counter
 
         state[STATE_VALUES.index("o_x")] = game_state.orange.pos["current"][0]
         state[STATE_VALUES.index("o_y")] = game_state.orange.pos["current"][1]
         state[STATE_VALUES.index("o_frightened")] = (
             1 if game_state.orange.frightened_counter > 0 else 0
         )
-        state[
-            STATE_VALUES.index("o_frightened_counter")
-        ] = game_state.orange.frightened_counter
+        # state[
+        #     STATE_VALUES.index("o_frightened_counter")
+        # ] = game_state.orange.frightened_counter
 
         state[STATE_VALUES.index("b_x")] = game_state.blue.pos["current"][0]
         state[STATE_VALUES.index("b_y")] = game_state.blue.pos["current"][1]
         state[STATE_VALUES.index("b_frightened")] = (
             1 if game_state.blue.frightened_counter > 0 else 0
         )
-        state[
-            STATE_VALUES.index("b_frightened_counter")
-        ] = game_state.blue.frightened_counter
+        # state[
+        #     STATE_VALUES.index("b_frightened_counter")
+        # ] = game_state.blue.frightened_counter
 
-        state[STATE_VALUES.index("orientation")] = self.orientation
+        state[STATE_VALUES.index("orientation")] = self.orientation % 2
+        state[STATE_VALUES.index("frightened_timer")] = game_state.frightened_counter
 
         state[np.array(STATE_VALUES) == "pellet"] = (
             np.array(game_state.grid)[PELLET_LOCATIONS != 0] == o
@@ -172,7 +202,7 @@ class PacBotEnv(gym.Env):
             np.array(game_state.grid)[POWER_PELLET_LOCATIONS != 0] == O
         )
 
-        return state
+        return self.normalize_state(state) if self.normalized else state
 
     """ 
     returns game state as numpy array
@@ -361,20 +391,12 @@ class PacBotEnv(gym.Env):
         #     print()
 
         print(
-            f'Mode: {state[STATE_VALUES.index("mode")]}, Lives: {state[STATE_VALUES.index("lives")]}, Cherry: {state[STATE_VALUES.index("cherry")]}, Frightened Timer: {state[STATE_VALUES.index("frightened_timer")]}'
+            f'Lives: {state[STATE_VALUES.index("lives")]}, Cherry: {state[STATE_VALUES.index("cherry")]}'
         )
-        print(
-            f'r - frightened: {state[STATE_VALUES.index("r_frightened")]}, frightened_counter: {state[STATE_VALUES.index("r_frightened_counter")]}'
-        )
-        print(
-            f'p - frightened: {state[STATE_VALUES.index("p_frightened")]}, frightened_counter: {state[STATE_VALUES.index("p_frightened_counter")]}'
-        )
-        print(
-            f'o - frightened: {state[STATE_VALUES.index("o_frightened")]}, frightened_counter: {state[STATE_VALUES.index("o_frightened_counter")]}'
-        )
-        print(
-            f'b - frightened: {state[STATE_VALUES.index("b_frightened")]}, frightened_counter: {state[STATE_VALUES.index("b_frightened_counter")]}'
-        )
+        print(f'r - frightened: {state[STATE_VALUES.index("r_frightened")]}')
+        print(f'p - frightened: {state[STATE_VALUES.index("p_frightened")]}')
+        print(f'o - frightened: {state[STATE_VALUES.index("o_frightened")]}')
+        print(f'b - frightened: {state[STATE_VALUES.index("b_frightened")]}')
         print(f"reward: {self.prev_reward}, done: {self.prev_done}")
         return grid
 

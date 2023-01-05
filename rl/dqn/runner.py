@@ -18,8 +18,8 @@ class Runner:
         self.number = number
         self.seed = seed
 
-        self.env = PacBotEnv()  # gym.make(env_name)
-        self.env_evaluate = PacBotEnv()
+        self.env = PacBotEnv(log=False, normalized=True)  # gym.make(env_name)
+        self.env_evaluate = PacBotEnv(log=False, normalized=True)
         # self.env_evaluate = gym.make(
         #     env_name
         # )  # When evaluating the policy, we need to rebuild an environment
