@@ -34,7 +34,7 @@ class PacBotEnv(gym.Env):
     DEATH_REWARD = -50
     LOSE_REWARD = -50
     WIN_REWARD = 100
-    STEP_REWARD = -0.1
+    STEP_REWARD = -1
 
     NUM_ACTIONS = 9
 
