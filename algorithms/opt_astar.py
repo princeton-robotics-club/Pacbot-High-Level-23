@@ -1,4 +1,4 @@
-from typing import List
+from heapq import heappush, heappop, heapify
 from .node import Node
 
 # FOR TESTING
@@ -7,22 +7,10 @@ from .node import Node
 
 # sys.path.append("../")
 from constants import TURN_TICKS, MOVE_TICKS, UP
+from typing import List, Tuple
 
-# state is a dict with keys:
-#    pellets:       height x width
-#    power_pellets: height x width
-#    pac:           (row, col)
-#    r:             (row, col)
-#    b:             (row, col)
-#    o:             (row, col)
-#    p:             (row, col)
-#    rf:            bool
-#    bf:            bool
-#    of:            bool
-#    pf:            bool
-#    dt:            distance threshold (in cells)
-#    orientation:   UP, LEFT, RIGHT, DOWN
-def astar(maze, start, end, state=None, heuristic=None):
+
+def astar(maze, start, end, state, heuristic=None):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
 
     start = tuple(start)
@@ -35,26 +23,18 @@ def astar(maze, start, end, state=None, heuristic=None):
     end_node.g = end_node.h = end_node.f = 0
 
     # Initialize both open and closed list
-    open_list: List[Node] = []
-    closed_list = []
+    open_list: List[Tuple[int, int, Node]] = []
+    closed_list = set()
 
     # Add the start node
-    open_list.append(start_node)
+    open_list.append((start_node.f, start_node.g, start_node))
 
     # Loop until you find the end
     while len(open_list) > 0:
 
         # Get the current node with lowest estimated cost
-        current_node = open_list[0]
-        current_index = 0
-        for index, item in enumerate(open_list):
-            if item.f < current_node.f:
-                current_node = item
-                current_index = index
-
-        # Pop current off open list, add to closed list
-        open_list.pop(current_index)
-        closed_list.append(current_node)
+        _, _, current_node = heappop(open_list)
+        closed_list.add((current_node.position, current_node.pacbot_orientation % 2))
 
         # Found the goal
         if current_node == end_node:
@@ -109,14 +89,9 @@ def astar(maze, start, end, state=None, heuristic=None):
         # Loop through children
         for child in children:
 
-            skip = False
+            skip = (child.position, child.pacbot_orientation % 2) in closed_list
 
-            # Checks if child is on the closed list
-            for closed_node in closed_list:
-                if closed_node == child:
-                    skip = True
-                    break
-
+            # Child is on the closed list
             if skip:
                 continue
 
@@ -126,20 +101,19 @@ def astar(maze, start, end, state=None, heuristic=None):
                 if child.pacbot_orientation % 2 == curr_orientation
                 else TURN_TICKS
             )
-            # current heuristic is euclidean distance
-            child.h = (
-                heuristic(child, end_node)
-                if heuristic
-                else ((child.position[0] - end_node.position[0]) ** 2)
-                + ((child.position[1] - end_node.position[1]) ** 2)
+            child.h = ((child.position[0] - end_node.position[0]) ** 2) + (
+                (child.position[1] - end_node.position[1]) ** 2
             )
             child.f = child.g + child.h
 
             # Child is already in the open list
             on = False
-            for open_node in open_list:
+            champ = None
+            for index, item in enumerate(open_list):
+                _, _, open_node = item
                 if child == open_node:
                     on = True
+                    champ = index
                     # possibly need to rework this if heuristic isn't based on distance
                     if child.g > open_node.g:
                         skip = True
@@ -147,10 +121,11 @@ def astar(maze, start, end, state=None, heuristic=None):
                 continue
 
             if on:
-                open_list.remove(child)
+                open_list.pop(champ)
 
+            heapify(open_list)
             # Add the child to the open list
-            open_list.append(child)
+            heappush(open_list, (child.f, child.g, child))
     return []
 
 
