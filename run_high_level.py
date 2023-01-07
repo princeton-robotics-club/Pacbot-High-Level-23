@@ -47,6 +47,7 @@ def get_state(env: PacBotEnv, obs):
         "of": obs[env.STATE_VALUES.index("o_frightened")],
         "pf": obs[env.STATE_VALUES.index("p_frightened")],
         "dt": obs[env.STATE_VALUES.index("frightened_timer")] / 2,
+        "orientation": obs[env.STATE_VALUES.index("orientation")],
     }
 
 
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     env = PacBotEnv(speed=0.8)
     obs = env.reset()
     grid = env.render()
-    visualizer.draw_grid(grid)
+    visualizer.draw_grid(grid, env.orientation)
     policy = HighLevelPolicy()
 
     done = False
@@ -68,15 +69,17 @@ if __name__ == "__main__":
     total_score = 0
     while key != pygame.K_q:
         state = get_state(env, obs)
+        pre = time.time()
         action = policy.get_action(state)
+        print(f"CALC TIME: {time.time() - pre}")
         obs, reward, done, _ = env.step(action)
         grid = env.render()
-        visualizer.draw_grid(grid)
+        visualizer.draw_grid(grid, env.orientation)
 
         if done:
             trials += 1
             total_score += env.running_score
-            env.reset()
+            obs = env.reset()
             env.render()
         key = visualizer.wait_ai_control()
         if args.s:

@@ -5,6 +5,10 @@ from network import Dueling_Net, Net
 from replay_buffer import ReplayBuffer
 import os
 from pathlib import Path
+import sys
+
+sys.path.append("../")
+from helpers import load_nnet, generate_mask
 
 
 class DQN(object):
@@ -38,15 +42,19 @@ class DQN(object):
         )  # Copy the online_net to the target_net
 
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
+        self.args = args
 
     def choose_action(self, state, epsilon):
+        mask = generate_mask(state)
         if np.random.uniform() > epsilon:
             with torch.no_grad():
                 state = torch.unsqueeze(torch.tensor(state, dtype=torch.float), 0)
-                q = self.net(state)
+                q: torch.Tensor = self.net(state)
+                q = q.flatten().sub(q.min().item()) * torch.from_numpy(mask)
                 action = q.argmax(dim=-1).item()
         else:
-            action = np.random.randint(0, self.action_dim)
+            action = np.random.choice(mask.nonzero())
+            # action = np.random.randint(0, self.action_dim)
         return action
 
     def learn(self, replay_buffer: ReplayBuffer, total_steps):
@@ -117,9 +125,11 @@ class DQN(object):
 
     def save_checkpoint(self, netid: str, algo_name: str):
         Path(f"checkpoints/{netid}").mkdir(parents=True, exist_ok=True)
-        file_numbers = [int(f.split(".")[0].replace(f"{algo_name}_", ""))
+        file_numbers = [
+            int(f.split(".")[0].replace(f"{algo_name}_", ""))
             for f in os.listdir(os.path.join("checkpoints", netid))
-            if algo_name in f]
+            if algo_name in f
+        ]
         last_ind = 0
         if file_numbers:
             last_ind = max(file_numbers)
@@ -128,6 +138,10 @@ class DQN(object):
             {
                 "model_state_dict": self.net.state_dict(),
                 "optimizer_state_dict": self.optimizer.state_dict(),
+                "args": self.args,
             },
             os.path.join("checkpoints", netid, f"{algo_name}_{last_ind + 1}.pth"),
         )
+
+    def load_checkpoint(self, filepath: str):
+        load_nnet(filepath, self.net, self.optimizer)

@@ -18,8 +18,8 @@ class Runner:
         self.number = number
         self.seed = seed
 
-        self.env = PacBotEnv()  # gym.make(env_name)
-        self.env_evaluate = PacBotEnv()
+        self.env = PacBotEnv(log=False, normalized=True)  # gym.make(env_name)
+        self.env_evaluate = PacBotEnv(log=False, normalized=True)
         # self.env_evaluate = gym.make(
         #     env_name
         # )  # When evaluating the policy, we need to rebuild an environment
@@ -151,6 +151,9 @@ class Runner:
         self,
     ):
         evaluate_reward = 0
+        total_score = 0
+        high_score = float("-inf")
+        low_score = float("inf")
         self.agent.net.eval()
         for _ in range(self.args.evaluate_times):
             state = self.env_evaluate.reset()
@@ -161,6 +164,10 @@ class Runner:
                 next_state, reward, done, _ = self.env_evaluate.step(action)
                 episode_reward += reward
                 state = next_state
+            score = self.env_evaluate.game_state.score
+            total_score += score
+            high_score = max(high_score, score)
+            low_score = min(low_score, score)
             evaluate_reward += episode_reward
         self.agent.net.train()
         evaluate_reward /= self.args.evaluate_times
@@ -179,6 +186,17 @@ class Runner:
             "step_rewards_{}".format(self.env_name),
             evaluate_reward,
             global_step=self.total_steps,
+        )
+        self.writer.add_scalar(
+            "average_game_score_{}".format(self.env_name),
+            total_score / self.args.evaluate_times,
+            self.total_steps,
+        )
+        self.writer.add_scalar(
+            "high_game_score_{}".format(self.env_name), high_score, self.total_steps
+        )
+        self.writer.add_scalar(
+            "low_game_score_{}".format(self.env_name), low_score, self.total_steps
         )
 
 
@@ -274,8 +292,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    env_names = ["CartPole-v1", "LunarLander-v2"]
-    env_index = 1
+    # env_names = ["CartPole-v1", "LunarLander-v2"]
+    # env_index = 1
+    env_name = "PacBotEnv"
     for seed in [0, 10, 100]:
-        runner = Runner(args=args, env_name=env_names[env_index], number=1, seed=seed)
+        runner = Runner(args=args, env_name=env_name, number=1, seed=seed)
         runner.run()
