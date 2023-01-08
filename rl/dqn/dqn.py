@@ -54,6 +54,8 @@ class DQN(object):
         else:
             action = np.random.choice(mask.nonzero()[0])
             # action = np.random.randint(0, self.action_dim)
+        if not mask[action]:
+            action = np.random.choice(mask.nonzero()[0])
         return action
 
     def learn(self, replay_buffer: ReplayBuffer, total_steps):

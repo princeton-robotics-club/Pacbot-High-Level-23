@@ -140,7 +140,6 @@ class Runner:
                 if self.total_steps % self.args.evaluate_freq == 0:
                     self.evaluate_policy()
 
-                # TODO add checkpoints to save model
         # Save reward
         np.save(
             "./data_train/{}_env_{}_number_{}_seed_{}.npy".format(
