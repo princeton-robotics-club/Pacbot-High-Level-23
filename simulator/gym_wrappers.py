@@ -84,19 +84,19 @@ class PacBotEnv(gym.Env):
     STATE_VALUES.extend(["power_pellet" for i in range(NUM_POWER_PELLETS)])
     STATE_VALUE_RANGES = {
         "lives": (0, 3),
-        "pac_x": (1, 26),
-        "pac_y": (1, 29),
-        "r_x": (1, 26),
-        "r_y": (1, 29),
+        # "pac_x": (1, 26),
+        # "pac_y": (1, 29),
+        # "r_x": (1, 26),
+        # "r_y": (1, 29),
         # "r_frightened_counter": (0, 40),
-        "p_x": (1, 26),
-        "p_y": (1, 29),
+        # "p_x": (1, 26),
+        # "p_y": (1, 29),
         # "p_frightened_counter": (0, 40),
-        "o_x": (1, 26),
-        "o_y": (1, 29),
+        # "o_x": (1, 26),
+        # "o_y": (1, 29),
         # "o_frightened_counter": (0, 40),
-        "b_x": (1, 26),
-        "b_y": (1, 29),
+        # "b_x": (1, 26),
+        # "b_y": (1, 29),
         # "b_frightened_counter": (0, 40),
         "frightened_timer": (0, 40),
     }
@@ -104,7 +104,7 @@ class PacBotEnv(gym.Env):
     STATE_VALUE_MIN = 0
     STATE_VALUE_MAX = 1
 
-    def __init__(self, speed=1, log=True, normalized=False):
+    def __init__(self, speed=1, log=True, normalized=False, forward_only=False):
         super(PacBotEnv, self).__init__()
 
         self.action_space = spaces.Discrete(self.NUM_ACTIONS)
@@ -129,6 +129,8 @@ class PacBotEnv(gym.Env):
         self.num_lives = self.game_state.lives
         self.log = log
         self.normalized = normalized
+        self.prev_action = RIGHT
+        self.forward_only = forward_only
         print(self.STATE_VALUES.index("pac_x"))
         print(self.STATE_VALUES.index("pac_y"))
         print(self.STATE_VALUES.index("orientation"))
@@ -140,6 +142,33 @@ class PacBotEnv(gym.Env):
                 range[1] - range[0]
             )
         return state
+
+    def generate_mask(self):
+        game_state = self.game_state
+        actions = [(-1, 0), (0, -1), (1, 0), (0, 1)]
+        pac_x = game_state.pacbot.pos[0]
+        pac_y = game_state.pacbot.pos[1]
+        orientation = self.orientation % 2
+        mask = np.ones(9, dtype=np.int64)
+        mask[-1 * orientation + 1] = 0
+        mask[-1 * orientation + 3] = 0
+        mask[orientation + 4] = 0
+        mask[orientation + 6] = 0
+        for index, action in enumerate(actions):
+            new_x = pac_x + action[0]
+            new_y = pac_y + action[1]
+            if (
+                new_x < 0
+                or new_x >= len(grid)
+                or new_y < 0
+                or new_y >= len(grid[0])
+                or grid[new_x][new_y] in (I, n)
+            ):
+                if orientation == index % 2:
+                    mask[index] = 0
+                else:
+                    mask[index + 4] = 0
+        return mask
 
     def _get_state(self):
         game_state = self.game_state
@@ -214,6 +243,7 @@ class PacBotEnv(gym.Env):
         self.running_score = 0
         self.prev_reward = 0
         self.prev_done = False
+        self.prev_action = RIGHT
         self.num_lives = self.game_state.lives
         self.orientation = UP
         return self._get_state()
@@ -326,8 +356,17 @@ class PacBotEnv(gym.Env):
         if not life_lost and not done:
             game_state.pacbot.update(new_pac_pos)
 
+        mask = self.generate_mask()
+        eval_mask = mask.copy()
+
+        if self.forward_only:
+            prev_action = self.prev_action
+            mask[STAY] = 0
+            if prev_action < FACE_UP:
+                mask[prev_action - 2 if prev_action > LEFT else prev_action + 2] = 0
+
         # return state, reward, done, info
-        return self._get_state(), reward, done, {}
+        return self._get_state(), reward, done, {"mask": mask, "eval_mask": eval_mask}
 
     def render(self, mode="console"):
         if mode != "console":

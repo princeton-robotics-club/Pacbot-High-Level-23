@@ -44,8 +44,7 @@ class DQN(object):
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         self.args = args
 
-    def choose_action(self, state, epsilon):
-        mask = generate_mask(state)
+    def choose_action(self, state, mask, epsilon):
         if np.random.uniform() > epsilon:
             with torch.no_grad():
                 state = torch.unsqueeze(torch.tensor(state, dtype=torch.float), 0)
@@ -53,7 +52,7 @@ class DQN(object):
                 q = q.flatten().sub(q.min().item()) * torch.from_numpy(mask)
                 action = q.argmax(dim=-1).item()
         else:
-            action = np.random.choice(mask.nonzero())
+            action = np.random.choice(mask.nonzero()[0])
             # action = np.random.randint(0, self.action_dim)
         return action
 

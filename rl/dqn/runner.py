@@ -100,9 +100,11 @@ class Runner:
             state = self.env.reset()
             done = False
             episode_steps = 0
+            mask = self.env.generate_mask()
             while not done:
-                action = self.agent.choose_action(state, epsilon=self.epsilon)
-                next_state, reward, done, _ = self.env.step(action)
+                action = self.agent.choose_action(state, mask, epsilon=self.epsilon)
+                next_state, reward, done, extra = self.env.step(action)
+                mask = extra["mask"]
                 episode_steps += 1
                 self.total_steps += 1
 
@@ -159,9 +161,11 @@ class Runner:
             state = self.env_evaluate.reset()
             done = False
             episode_reward = 0
+            mask = self.env_evaluate.generate_mask()
             while not done:
-                action = self.agent.choose_action(state, epsilon=0)
-                next_state, reward, done, _ = self.env_evaluate.step(action)
+                action = self.agent.choose_action(state, mask, epsilon=0)
+                next_state, reward, done, extra = self.env_evaluate.step(action)
+                mask = extra["eval_mask"]
                 episode_reward += reward
                 state = next_state
             score = self.env_evaluate.game_state.score
@@ -172,7 +176,9 @@ class Runner:
         self.agent.net.train()
         evaluate_reward /= self.args.evaluate_times
         if self.evaluate_rewards:
-            if evaluate_reward > self.evaluate_rewards[self.last_checkpoint_ind]:
+            if evaluate_reward > self.evaluate_rewards[self.last_checkpoint_ind] and (
+                self.args.use_noisy or self.epsilon == self.epsilon_min
+            ):
                 self.last_checkpoint_ind = len(self.evaluate_rewards)
                 self.agent.save_checkpoint(self.args.netid, self.algorithm)
 
