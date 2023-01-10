@@ -367,7 +367,12 @@ class PacBotEnv(gym.Env):
                 mask[prev_action - 2 if prev_action > LEFT else prev_action + 2] = 0
 
         # return state, reward, done, info
-        return self._get_state(), reward, done, {"mask": mask, "eval_mask": eval_mask}
+        return (
+            self._get_state(),
+            reward,
+            done,
+            {"mask": mask, "eval_mask": eval_mask, "life_lost": life_lost},
+        )
 
     def render(self, mode="console"):
         if mode != "console":

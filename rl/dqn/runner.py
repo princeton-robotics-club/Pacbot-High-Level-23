@@ -139,6 +139,8 @@ class Runner:
                 else:
                     terminal = False
 
+                terminal = terminal or extra["life_lost"]
+
                 self.replay_buffer.store_transition(
                     state, action, reward, next_state, terminal, done
                 )  # Store the transition
@@ -229,9 +231,7 @@ if __name__ == "__main__":
         default=1e3,
         help="Evaluate the policy every 'evaluate_freq' steps",
     )
-    parser.add_argument(
-        "--evaluate_times", type=float, default=3, help="Evaluate times"
-    )
+    parser.add_argument("--evaluate_times", type=int, default=3, help="Evaluate times")
 
     parser.add_argument(
         "--buffer_capacity",
