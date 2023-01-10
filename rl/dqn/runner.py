@@ -9,6 +9,7 @@ import sys
 
 sys.path.append("../../")
 from simulator.gym_wrappers import PacBotEnv
+from policies.high_level_policy import HighLevelPolicy
 
 
 class Runner:
@@ -91,6 +92,10 @@ class Runner:
 
         self.last_checkpoint_ind = 0
 
+        self.teacher = HighLevelPolicy()
+        self.pretrain = args.pretrain
+        self.pretrain_steps = args.pretrain_steps
+
     def run(
         self,
     ):
@@ -102,7 +107,12 @@ class Runner:
             episode_steps = 0
             mask = self.env.generate_mask()
             while not done:
-                action = self.agent.choose_action(state, mask, epsilon=self.epsilon)
+                if self.pretrain and self.total_steps < self.pretrain_steps:
+                    action = self.teacher.get_action(
+                        self.teacher.get_state(self.env, state)
+                    )
+                else:
+                    action = self.agent.choose_action(state, mask, epsilon=self.epsilon)
                 next_state, reward, done, extra = self.env.step(action)
                 mask = extra["mask"]
                 episode_steps += 1
@@ -293,6 +303,10 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--netid", type=str, required=True, help="Name for neural network checkpoints"
+    )
+    parser.add_argument("--pretrain", help="Pretrain model", action="store_true")
+    parser.add_argument(
+        "--pretrain_steps", type=int, default=int(5e4), help="Steps in pretraining"
     )
 
     args = parser.parse_args()

@@ -355,6 +355,7 @@ class PacBotEnv(gym.Env):
         # checks if game has stopped first
         if not life_lost and not done:
             game_state.pacbot.update(new_pac_pos)
+            game_state._update_score()
 
         mask = self.generate_mask()
         eval_mask = mask.copy()

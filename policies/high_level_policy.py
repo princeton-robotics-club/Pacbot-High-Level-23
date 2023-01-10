@@ -3,6 +3,7 @@ import numpy as np
 from constants import STAY
 from simulator.game_engine.variables import *
 from algorithms.opt_astar import astar
+from algorithms.dijkstra import dijkstra
 from policies.policy import Policy
 
 
@@ -13,6 +14,49 @@ class HighLevelPolicy(Policy):
         super().__init__()
         self.heuristic = heuristic
 
+    def get_state(self, env, obs):
+        pellets = np.zeros((env.GRID_HEIGHT, env.GRID_WIDTH))
+        power_pellets = np.zeros((env.GRID_HEIGHT, env.GRID_WIDTH))
+        pellet_exists = obs[np.array(env.STATE_VALUES) == "pellet"]
+        for i in range(len(pellet_exists)):
+            if pellet_exists[i]:
+                pellets[env.PELLET_LOCATIONS == i + 1] = 1
+
+        power_pellet_exists = obs[np.array(env.STATE_VALUES) == "power_pellet"]
+        for i in range(len(power_pellet_exists)):
+            if power_pellet_exists[i]:
+                power_pellets[env.POWER_PELLET_LOCATIONS == i + 1] = 1
+        return {
+            "pellets": pellets,
+            "power_pellets": power_pellets,
+            "pac": (
+                int(obs[env.STATE_VALUES.index("pac_x")]),
+                int(obs[env.STATE_VALUES.index("pac_y")]),
+            ),
+            "r": (
+                int(obs[env.STATE_VALUES.index("r_x")]),
+                int(obs[env.STATE_VALUES.index("r_y")]),
+            ),
+            "b": (
+                int(obs[env.STATE_VALUES.index("b_x")]),
+                int(obs[env.STATE_VALUES.index("b_y")]),
+            ),
+            "o": (
+                int(obs[env.STATE_VALUES.index("o_x")]),
+                int(obs[env.STATE_VALUES.index("o_y")]),
+            ),
+            "p": (
+                int(obs[env.STATE_VALUES.index("p_x")]),
+                int(obs[env.STATE_VALUES.index("p_y")]),
+            ),
+            "rf": obs[env.STATE_VALUES.index("r_frightened")],
+            "bf": obs[env.STATE_VALUES.index("b_frightened")],
+            "of": obs[env.STATE_VALUES.index("o_frightened")],
+            "pf": obs[env.STATE_VALUES.index("p_frightened")],
+            "dt": obs[env.STATE_VALUES.index("frightened_timer")] / 2,
+            "orientation": obs[env.STATE_VALUES.index("orientation")],
+        }
+
     # helper method to astar to a ghost, which is technically a barrier in maze
     def astar_ghost(self, maze, start, end, state=None):
         maze[end] = False
@@ -21,6 +65,8 @@ class HighLevelPolicy(Policy):
         return path
 
     def get_action_from_path(self, path):
+        if len(path) < 2:
+            return STAY
         movement = tuple(np.subtract(path[1], path[0]))
         for index, action in enumerate(self.ACTIONS):
             if action == movement:
@@ -146,18 +192,22 @@ class HighLevelPolicy(Policy):
         # target the closest pellet not on pac
         # move to it if it exists
         positions = np.argwhere(state["pellets"])
-        closest_d = None
-        closest_path = None
-        for position in positions:
-            path = astar(obstacles, state["pac"], position, state, self.heuristic)
-            if not path or len(path) < 2:
-                continue
-            if closest_d is None or closest_d > len(path) - 1:
-                closest_d = len(path) - 1
-                closest_path = path
-                if closest_d <= 1:
-                    break
-        if closest_d:
+        # closest_d = None
+        # closest_path = None
+        # for position in positions:
+        #     path = astar(obstacles, state["pac"], position, state, self.heuristic)
+        #     if not path or len(path) < 2:
+        #         continue
+        #     if closest_d is None or closest_d > len(path) - 1:
+        #         closest_d = len(path) - 1
+        #         closest_path = path
+        #         if closest_d <= 1:
+        #             break
+        # if closest_d:
+        #     return self.get_action_from_path(closest_path)
+        state["pellets"] = set(tuple(coord) for coord in positions.tolist())
+        closest_path = dijkstra(obstacles, state["pac"], state)
+        if closest_path:
             return self.get_action_from_path(closest_path)
 
         return STAY
