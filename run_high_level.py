@@ -1,4 +1,3 @@
-import numpy as np
 from simulator.gym_wrappers import PacBotEnv
 from simulator.visualizer import Visualizer
 from policies.high_level_policy import HighLevelPolicy
@@ -22,6 +21,8 @@ if __name__ == "__main__":
     key = 0
     trials = 0
     total_score = 0
+    worst_score = float("inf")
+    best_score = float("-inf")
     while key != pygame.K_q:
         state = policy.get_state(env, obs)
         pre = time.time()
@@ -34,6 +35,8 @@ if __name__ == "__main__":
         if done:
             trials += 1
             total_score += env.running_score
+            worst_score = min(env.running_score, worst_score)
+            best_score = max(env.running_score, best_score)
             obs = env.reset()
             env.render()
         key = visualizer.wait_ai_control()
@@ -41,3 +44,4 @@ if __name__ == "__main__":
             time.sleep(0.1)
     print(f"Average score per run: {total_score / trials}")
     print(f"Number of trials: {trials}")
+    print(f"Range: {worst_score} - {best_score}")
