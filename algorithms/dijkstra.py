@@ -38,7 +38,7 @@ def dijkstra(maze, start, state):
             path = []
             current = current_node
             while current is not None:
-                path.append(current.position)
+                path.append(current)
                 current = current.parent
             return path[::-1]
 

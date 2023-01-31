@@ -41,7 +41,7 @@ def astar(maze, start, end, state, heuristic=None):
             path = []
             current = current_node
             while current is not None:
-                path.append(current.position)
+                path.append(current)
                 current = current.parent
             return path[::-1]  # Return reversed path
 

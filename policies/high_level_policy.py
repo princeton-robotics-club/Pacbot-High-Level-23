@@ -1,6 +1,6 @@
 from typing import Callable
 import numpy as np
-from constants import STAY
+from constants import STAY, MOVE_TICKS, GHOST_MOVE_TICKS
 from simulator.game_engine.variables import *
 from algorithms.opt_astar import astar
 from algorithms.dijkstra import dijkstra
@@ -53,7 +53,8 @@ class HighLevelPolicy(Policy):
             "bf": obs[env.STATE_VALUES.index("b_frightened")],
             "of": obs[env.STATE_VALUES.index("o_frightened")],
             "pf": obs[env.STATE_VALUES.index("p_frightened")],
-            "dt": obs[env.STATE_VALUES.index("frightened_timer")] / 2,
+            "dt": obs[env.STATE_VALUES.index("frightened_timer")]
+            / 2,  # divided to get raw seconds
             "orientation": obs[env.STATE_VALUES.index("orientation")],
         }
 
@@ -67,6 +68,7 @@ class HighLevelPolicy(Policy):
     def get_action_from_path(self, path):
         if len(path) < 2:
             return STAY
+        path = [path[i].position for i in range(min(3, len(path)))]
         movement = tuple(np.subtract(path[1], path[0]))
         for index, action in enumerate(self.ACTIONS):
             if action == movement:
@@ -138,14 +140,14 @@ class HighLevelPolicy(Policy):
             path = self.astar_ghost(obstacles, state["pac"], f_position, state)
             if not path or len(path) < 2:
                 continue
-            if closest_d is None or closest_d > len(path) - 1:
-                closest_d = len(path) - 1
+            if closest_d is None or closest_d > path[-1].g:
+                closest_d = path[-1].g
                 closest_path = path
                 if closest_d <= 1:
                     break
 
         # only chases frightened ghost if it's within certain distance
-        if closest_d and closest_d <= state["dt"]:
+        if closest_d is not None and closest_d <= state["dt"] * GHOST_MOVE_TICKS:
             return self.get_action_from_path(closest_path)
 
         print("phase: power pellets")
@@ -161,8 +163,10 @@ class HighLevelPolicy(Policy):
             print("pathfinding to ghost")
             path = self.astar_ghost(obstacles, state["pac"], g_position, state)
             # TODO see if -2 is better since beginning and end node are included
-            closest_ghost_dist = min(closest_ghost_dist, max(len(path) - 1, 0))
-            if not path or len(path) - 1 <= self.NT:
+            closest_ghost_dist = min(
+                closest_ghost_dist, path[-1].g if path else float("inf")
+            )  # max(len(path) - 1, 0))
+            if not path or path[-1].g <= self.NT * MOVE_TICKS:
                 nearby = True
                 # break
         print("nearby:", nearby)
@@ -174,15 +178,15 @@ class HighLevelPolicy(Policy):
             path = astar(obstacles, state["pac"], position, state, self.heuristic)
             if not path or len(path) < 2:
                 continue
-            if closest_d is None or closest_d > len(path) - 1:
-                closest_d = len(path) - 1
+            if closest_d is None or closest_d > path[-1].g:
+                closest_d = path[-1].g
                 closest_path = path
                 if closest_d <= 1:
                     break
-        if closest_d:
+        if closest_d is not None:
             # moves towards nearby power pellet
-            # potential bug - still moves towards power pellet even if ghost is in path
-            if closest_d > 1 or nearby:
+            # TODO potential bug - still moves towards power pellet even if ghost is in path
+            if closest_d > MOVE_TICKS or nearby:
                 return self.get_action_from_path(closest_path)
             # waits until ghost approaches
             else:
