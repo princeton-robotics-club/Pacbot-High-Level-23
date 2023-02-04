@@ -7,7 +7,10 @@ n = 0
 largest_time = float("-inf")
 lowest_time = float("inf")
 with open(sys.argv[1], "r") as f:
-    for line in f:
+    lines = f.readlines()
+    for line in lines[-3:]:
+        print(line.strip())
+    for line in lines:
         if "CALC TIME: " in line:
             time = float(line[11:])
             total_time += time
