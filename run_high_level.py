@@ -1,3 +1,4 @@
+from analysis import Analysis
 from simulator.gym_wrappers import PacBotEnv
 from simulator.visualizer import Visualizer
 from policies.high_level_policy import HighLevelPolicy
@@ -8,6 +9,7 @@ import argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--s", help="Turn on slow mode", action="store_true")
+    parser.add_argument("--o", help="Output file name", type=str)
     args = parser.parse_args()
 
     visualizer = Visualizer()
@@ -16,32 +18,25 @@ if __name__ == "__main__":
     grid = env.render()
     visualizer.draw_grid(grid, env.orientation)
     policy = HighLevelPolicy()
+    analysis = Analysis(args.o)
 
     done = False
     key = 0
-    trials = 0
-    total_score = 0
-    worst_score = float("inf")
-    best_score = float("-inf")
+
     while key != pygame.K_q:
         state = policy.get_state(env, obs)
         pre = time.time()
         action = policy.get_action(state)
-        print(f"CALC TIME: {time.time() - pre}")
+        analysis.log_calc(time.time() - pre)
         obs, reward, done, _ = env.step(action)
         grid = env.render()
         visualizer.draw_grid(grid, env.orientation)
 
         if done:
-            trials += 1
-            total_score += env.running_score
-            worst_score = min(env.running_score, worst_score)
-            best_score = max(env.running_score, best_score)
+            analysis.log_endgame(env)
             obs = env.reset()
             env.render()
         key = visualizer.wait_ai_control()
         if args.s:
             time.sleep(0.1)
-    print(f"Average score per run: {total_score / trials}")
-    print(f"Number of trials: {trials}")
-    print(f"Range: {worst_score} - {best_score}")
+    analysis.write()
