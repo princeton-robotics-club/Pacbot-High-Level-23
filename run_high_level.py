@@ -10,6 +10,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--s", help="Turn on slow mode", action="store_true")
     parser.add_argument("--o", help="Output file name", type=str)
+    parser.add_argument("--t", help="Number of trials", type=int, default=5)
     args = parser.parse_args()
 
     visualizer = Visualizer()
@@ -22,8 +23,9 @@ if __name__ == "__main__":
 
     done = False
     key = 0
+    trials = 0
 
-    while key != pygame.K_q:
+    while key != pygame.K_q and trials < args.t:
         state = policy.get_state(env, obs)
         pre = time.time()
         action = policy.get_action(state)
@@ -34,6 +36,7 @@ if __name__ == "__main__":
 
         if done:
             analysis.log_endgame(env)
+            trials += 1
             obs = env.reset()
             env.render()
         key = visualizer.wait_ai_control()
