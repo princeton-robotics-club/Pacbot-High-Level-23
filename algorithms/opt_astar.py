@@ -50,7 +50,7 @@ def astar(maze, start, end, state, heuristic=None):
         curr_orientation = current_node.pacbot_orientation % 2
         turned = False
         for direction, new_position in enumerate(
-            [(-1, 0), (0, -1), (1, 0), (0, 1)]
+            ((-1, 0), (0, -1), (1, 0), (0, 1))
         ):  # Adjacent squares
 
             # Get node position
