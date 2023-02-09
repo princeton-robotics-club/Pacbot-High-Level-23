@@ -37,6 +37,7 @@ if __name__ == "__main__":
         if done:
             analysis.log_endgame(env)
             trials += 1
+            policy.reset()
             obs = env.reset()
             env.render()
         key = visualizer.wait_ai_control()
