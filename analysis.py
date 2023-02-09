@@ -11,6 +11,7 @@ class Analysis:
         self.best_score = float("-inf")
         self.shortest_run = float("inf")
         self.longest_run = float("-inf")
+        self.wins = 0
 
         self.longest_calc_time = float("-inf")
         self.num_calcs = 0
@@ -30,6 +31,8 @@ class Analysis:
         self.best_score = max(env.running_score, self.best_score)
         self.shortest_run = min(env.ticks_passed, self.shortest_run)
         self.longest_run = max(env.ticks_passed, self.longest_run)
+        if env.game_state._are_all_pellets_eaten():
+            self.wins += 1
 
     def write(self):
         filepath = os.path.join("output", self.output_file)
@@ -37,6 +40,7 @@ class Analysis:
         with open(filepath, "w") as f:
             f.write(f"Average score per run: {self.total_score / self.trials}\n")
             f.write(f"Number of trials: {self.trials}\n")
+            f.write(f"Number of wins: {self.wins}\n")
             f.write(f"Range: {self.worst_score} - {self.best_score}\n")
             f.write(f"Longest Run: {self.longest_run} ticks\n")
             f.write(f"Shortest Run: {self.shortest_run} ticks\n")
