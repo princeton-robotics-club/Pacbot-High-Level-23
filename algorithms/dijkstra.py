@@ -7,10 +7,10 @@ from .node import Node
 # import sys
 
 # sys.path.append("../")
-from constants import TURN_TICKS, MOVE_TICKS, UP
+from constants import TURN_TICKS, MOVE_TICKS
 
 
-def dijkstra(maze, start, state):
+def dijkstra(maze, start, state, max_iters=-1):
     start = tuple(start)
 
     pellets = state["pellets"]
@@ -26,6 +26,7 @@ def dijkstra(maze, start, state):
     # Add the start node
     open_list.append((start_node.g, start_node))
 
+    iterations = 0
     # Loop until you find the end
     while len(open_list) > 0:
 
@@ -42,12 +43,17 @@ def dijkstra(maze, start, state):
                 current = current.parent
             return path[::-1]
 
+        if iterations == max_iters:
+            return []
+
+        iterations += 1
+
         # Generate children
         children: List[Node] = []
         curr_orientation = current_node.pacbot_orientation % 2
         turned = False
         for direction, new_position in enumerate(
-            [(-1, 0), (0, -1), (1, 0), (0, 1)]
+            ((-1, 0), (0, -1), (1, 0), (0, 1))
         ):  # Adjacent squares
 
             # Get node position
@@ -119,4 +125,4 @@ def dijkstra(maze, start, state):
             heapify(open_list)
             # Add the child to the open list
             heappush(open_list, (child.g, child))
-    return None
+    return []
