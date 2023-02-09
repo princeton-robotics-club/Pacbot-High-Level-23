@@ -134,6 +134,7 @@ class PacBotEnv(gym.Env):
         print(self.STATE_VALUES.index("pac_x"))
         print(self.STATE_VALUES.index("pac_y"))
         print(self.STATE_VALUES.index("orientation"))
+        self.ticks_passed = 0
 
     def normalize_state(self, state):
         for key, range in self.STATE_VALUE_RANGES.items():
@@ -246,6 +247,7 @@ class PacBotEnv(gym.Env):
         self.prev_action = RIGHT
         self.num_lives = self.game_state.lives
         self.orientation = UP
+        self.ticks_passed = 0
         return self._get_state()
 
     def is_pacbot_horizontal(self):
@@ -326,6 +328,7 @@ class PacBotEnv(gym.Env):
             game_state.next_step()
             life_lost = self.num_lives != game_state.lives
             done = game_state.game_over
+            self.ticks_passed += 1
             # prevents advancing ticker if the game stops
             if life_lost or done:
                 break
