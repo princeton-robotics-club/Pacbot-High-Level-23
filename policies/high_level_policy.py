@@ -1,19 +1,17 @@
 from typing import Callable
 import numpy as np
-from constants import STAY, MOVE_TICKS, GHOST_MOVE_TICKS
+from constants import STAY
 from simulator.game_engine.variables import *
 from algorithms.opt_astar import astar
-from algorithms.dijkstra import dijkstra
 from policies.policy import Policy
 
 
 class HighLevelPolicy(Policy):
-    def __init__(
-        self, heuristic: Callable = None, debug=True, nearby_threshold: int = 3
-    ) -> None:
-        super().__init__(debug)
+    NT = 3
+
+    def __init__(self, heuristic: Callable = None) -> None:
+        super().__init__()
         self.heuristic = heuristic
-        self.NT = nearby_threshold
 
     # helper method to astar to a ghost, which is technically a barrier in maze
     def astar_ghost(self, maze, start, end, state=None):
@@ -23,9 +21,6 @@ class HighLevelPolicy(Policy):
         return path
 
     def get_action_from_path(self, path):
-        if len(path) < 2:
-            return STAY
-        path = [path[i].position for i in range(min(3, len(path)))]
         movement = tuple(np.subtract(path[1], path[0]))
         for index, action in enumerate(self.ACTIONS):
             if action == movement:
@@ -37,7 +32,7 @@ class HighLevelPolicy(Policy):
         for index, action in enumerate(self.ACTIONS):
             if action == movement:
                 return index + 4
-        self.dPrint("ERROR: DOUBLE TURN")
+        print("ERROR: DOUBLE TURN")
         return STAY
 
     # state is a dict with keys:
@@ -86,78 +81,83 @@ class HighLevelPolicy(Policy):
             g_positions.append(state["p"])
             obstacles[state["p"]] = True
 
-        self.dPrint("phase: frightened ghosts")
+        print("phase: frightened ghosts")
 
         # target the closest frightened ghost not on pac
         # move to it if it exists and is within dt
         closest_d = None
         closest_path = None
         for f_position in f_positions:
-            self.dPrint("pathfinding to frightened ghost")
+            print("pathfinding to frightened ghost")
             path = self.astar_ghost(obstacles, state["pac"], f_position, state)
             if not path or len(path) < 2:
                 continue
-            if closest_d is None or closest_d > path[-1].g:
-                closest_d = path[-1].g
+            if closest_d is None or closest_d > len(path) - 1:
+                closest_d = len(path) - 1
                 closest_path = path
                 if closest_d <= 1:
                     break
 
         # only chases frightened ghost if it's within certain distance
-        if closest_d is not None and closest_d <= state["dt"] * GHOST_MOVE_TICKS:
+        if closest_d and closest_d <= state["dt"]:
             return self.get_action_from_path(closest_path)
 
-        self.dPrint("phase: power pellets")
+        print("phase: power pellets")
 
         # target the closest power pellet not on pac
         # move to it, if it exists and (is further than 1 cell away or a ghost is within NT)
         # wait at it, if it exists and is within 1 cell and a ghost is not within NT cells
         nearby = False
-        # closest_ghost_dist = float("inf")
+        closest_ghost_dist = float("inf")
         for g_position in g_positions:
             if self.WALLS[g_position]:
                 continue
-            self.dPrint("pathfinding to ghost")
+            print("pathfinding to ghost")
             path = self.astar_ghost(obstacles, state["pac"], g_position, state)
             # TODO see if -2 is better since beginning and end node are included
-            # closest_ghost_dist = min(
-            #     closest_ghost_dist, path[-1].g if path else float("inf")
-            # )  # max(len(path) - 1, 0))
-            # if path:
-            #     print([node.position for node in path])
-            #     print(path[-1].g)
-            if not path or path[-1].g <= self.NT * MOVE_TICKS:
+            closest_ghost_dist = min(closest_ghost_dist, max(len(path) - 1, 0))
+            if not path or len(path) - 1 <= self.NT:
                 nearby = True
                 # break
-        self.dPrint(f"nearby:{nearby}")
-        positions = state["power_pellets"]  # np.argwhere(state["power_pellets"])
+        print("nearby:", nearby)
+        positions = np.argwhere(state["power_pellets"])
         closest_d = None
         closest_path = None
         for position in positions:
-            self.dPrint("pathfinding to power pellet")
+            print("pathfinding to power pellet")
             path = astar(obstacles, state["pac"], position, state, self.heuristic)
             if not path or len(path) < 2:
                 continue
-            if closest_d is None or closest_d > path[-1].g:
-                closest_d = path[-1].g
+            if closest_d is None or closest_d > len(path) - 1:
+                closest_d = len(path) - 1
                 closest_path = path
                 if closest_d <= 1:
                     break
-        if closest_d is not None:
+        if closest_d:
             # moves towards nearby power pellet
-            # TODO potential bug - still moves towards power pellet even if ghost is in path
-            if closest_d > MOVE_TICKS or nearby:
+            # potential bug - still moves towards power pellet even if ghost is in path
+            if closest_d > 1 or nearby:
                 return self.get_action_from_path(closest_path)
             # waits until ghost approaches
             else:
                 return STAY
 
-        self.dPrint("phase: pellets")
+        print("phase: pellets")
         # target the closest pellet not on pac
         # move to it if it exists
-        state["pellets"] = set(tuple(coord) for coord in state["pellets"].tolist())
-        closest_path = dijkstra(obstacles, state["pac"], state)
-        if closest_path:
+        positions = np.argwhere(state["pellets"])
+        closest_d = None
+        closest_path = None
+        for position in positions:
+            path = astar(obstacles, state["pac"], position, state, self.heuristic)
+            if not path or len(path) < 2:
+                continue
+            if closest_d is None or closest_d > len(path) - 1:
+                closest_d = len(path) - 1
+                closest_path = path
+                if closest_d <= 1:
+                    break
+        if closest_d:
             return self.get_action_from_path(closest_path)
 
         return STAY

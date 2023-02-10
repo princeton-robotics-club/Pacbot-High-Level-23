@@ -1,5 +1,4 @@
 env
-output/
 *__pycache__
 *.zip
 */checkpoints/*
