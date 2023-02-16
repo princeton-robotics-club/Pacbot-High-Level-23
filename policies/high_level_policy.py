@@ -1,9 +1,10 @@
 from typing import Callable
 import numpy as np
-from constants import STAY, MOVE_TICKS, GHOST_MOVE_TICKS
+from constants import STAY, MOVE_TICKS, GHOST_MOVE_TICKS, UP
 from simulator.game_engine.variables import *
 from algorithms.opt_astar import astar
 from algorithms.dijkstra import dijkstra
+from algorithms.ghost_logic import ghost_funcs, scatter_positions
 from policies.policy import Policy
 
 
@@ -14,12 +15,16 @@ class HighLevelPolicy(Policy):
         super().__init__(debug)
         self.heuristic = heuristic
         self.NT = nearby_threshold
+        self.prev_move = UP
+        self.ghosts = ("r", "o", "p", "b")
 
     # helper method to astar to a ghost, which is technically a barrier in maze
-    def astar_ghost(self, maze, start, end, state=None):
+    def astar_ghost(self, maze, start, end, next_move, state=None):
         maze[end] = False
+        maze[next_move] = False
         path = astar(maze, start, end, state, self.heuristic)
         maze[end] = True
+        maze[next_move] = True
         return path
 
     def get_action_from_path(self, path):
@@ -29,6 +34,7 @@ class HighLevelPolicy(Policy):
         movement = tuple(np.subtract(path[1], path[0]))
         for index, action in enumerate(self.ACTIONS):
             if action == movement:
+                self.prev_move = index
                 return index
         # assume that a turn happened
         if len(path) < 3:
@@ -64,27 +70,41 @@ class HighLevelPolicy(Policy):
         # stores frightened ghost positions
         f_positions = []
 
+        next_moves = {}
+        for ghost in self.ghosts:
+            next_moves[ghost] = ghost_funcs[ghost](
+                self.prev_move,
+                state["pac"],
+                state["r"],
+                state[ghost],
+                scatter_positions[ghost],
+            )
+
         # consider ghosts which are not frightened to be obstacles
         if state["rf"]:
             f_positions.append(state["r"])
         else:
-            g_positions.append(state["r"])
+            g_positions.append((state["r"], next_moves["r"]))
             obstacles[state["r"]] = True
+            obstacles[next_moves["r"]] = True
         if state["bf"]:
             f_positions.append(state["b"])
         else:
-            g_positions.append(state["b"])
+            g_positions.append((state["b"], next_moves["b"]))
             obstacles[state["b"]] = True
+            obstacles[next_moves["b"]] = True
         if state["of"]:
             f_positions.append(state["o"])
         else:
-            g_positions.append(state["o"])
+            g_positions.append((state["o"], next_moves["o"]))
             obstacles[state["o"]] = True
+            obstacles[next_moves["o"]] = True
         if state["pf"]:
             f_positions.append(state["p"])
         else:
-            g_positions.append(state["p"])
+            g_positions.append((state["p"], next_moves["p"]))
             obstacles[state["p"]] = True
+            obstacles[next_moves["p"]] = True
 
         self.dPrint("phase: frightened ghosts")
 
@@ -93,8 +113,10 @@ class HighLevelPolicy(Policy):
         closest_d = None
         closest_path = None
         for f_position in f_positions:
+            if obstacles[f_position]:
+                continue
             self.dPrint("pathfinding to frightened ghost")
-            path = self.astar_ghost(obstacles, state["pac"], f_position, state)
+            path = astar(obstacles, state["pac"], f_position, state)
             if not path or len(path) < 2:
                 continue
             if closest_d is None or closest_d > path[-1].g:
@@ -114,11 +136,13 @@ class HighLevelPolicy(Policy):
         # wait at it, if it exists and is within 1 cell and a ghost is not within NT cells
         nearby = False
         # closest_ghost_dist = float("inf")
-        for g_position in g_positions:
+        for g_position, next_pos in g_positions:
             if self.WALLS[g_position]:
                 continue
             self.dPrint("pathfinding to ghost")
-            path = self.astar_ghost(obstacles, state["pac"], g_position, state)
+            path = self.astar_ghost(
+                obstacles, state["pac"], g_position, next_pos, state
+            )
             # TODO see if -2 is better since beginning and end node are included
             # closest_ghost_dist = min(
             #     closest_ghost_dist, path[-1].g if path else float("inf")
