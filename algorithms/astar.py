@@ -38,13 +38,15 @@ def astar(maze, start, end, state=None, heuristic=None):
     open_list: List[Node] = []
     closed_list = []
 
-    # Add the start node
+    # Add the start node to open_list; oth index is g, 1st is h (heuristic), third is s
+    # f=g+h
     open_list.append(start_node)
 
     # Loop until you find the end
     while len(open_list) > 0:
 
         # Get the current node with lowest estimated cost
+        # On first iteration, open_list is 1; it will increase in future iterations
         current_node = open_list[0]
         current_index = 0
         for index, item in enumerate(open_list):
@@ -54,16 +56,16 @@ def astar(maze, start, end, state=None, heuristic=None):
 
         # Pop current off open list, add to closed list
         open_list.pop(current_index)
-        closed_list.append(current_node)
+        closed_list.append(current_node) #closed_list is the list of "relaxed nodes"
 
-        # Found the goal
+        # Found the goal -> Essentially done at end, when we reach the end goal; ignored until then
         if current_node == end_node:
             path = []
             current = current_node
             while current is not None:
                 path.append(current.position)
                 current = current.parent
-            return path[::-1]  # Return reversed path
+            return path[::-1]  # Return reversed path <- Is this the final return
 
         # Generate children
         children: List[Node] = []
@@ -88,7 +90,7 @@ def astar(maze, start, end, state=None, heuristic=None):
             ):
                 continue
 
-            # Make sure walkable terrain
+            # Make sure walkable terrain (i.e. check if it is a wall or not)
             if maze[node_position[0]][node_position[1]] != 0:
                 continue
 
@@ -111,7 +113,7 @@ def astar(maze, start, end, state=None, heuristic=None):
 
             skip = False
 
-            # Checks if child is on the closed list
+            # Checks if child is on the closed list; this helps prevent recalculating something we already did
             for closed_node in closed_list:
                 if closed_node == child:
                     skip = True
@@ -144,7 +146,7 @@ def astar(maze, start, end, state=None, heuristic=None):
                     if child.g > open_node.g:
                         skip = True
             if skip:
-                continue
+                continue #skip is a boolean; if true it goes to next iteration in for-loop
 
             if on:
                 open_list.remove(child)
