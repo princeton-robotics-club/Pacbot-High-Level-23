@@ -34,7 +34,7 @@ class Policy:
     def reset(self):
         pass
 
-    def get_state(self, env, obs):
+    def get_state(self, env, obs, done, extra):
         # relic of the past - would fill 2D grid with T/F values where pellets were/weren't
         # pellets = np.zeros((env.GRID_HEIGHT, env.GRID_WIDTH))
         # power_pellets = np.zeros((env.GRID_HEIGHT, env.GRID_WIDTH))
@@ -77,4 +77,5 @@ class Policy:
                 env.STATE_VALUES.index("frightened_timer")
             ],  # number of scared moves left
             "orientation": obs[env.STATE_VALUES.index("orientation")],
+            "life_lost": extra["life_lost"] or done,
         }
