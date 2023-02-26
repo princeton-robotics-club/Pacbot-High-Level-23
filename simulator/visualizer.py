@@ -87,6 +87,26 @@ class Visualizer(object):
         # self.screen.blit(pygame.transform.scale(self.fake_screen, self.screen.get_rect().size), (0,0))
         pygame.display.update()
 
+    def draw_replay(self, filepath):
+        moves = []
+        info_dict = {}
+        with open(filepath, "r") as f:
+            lines = f.readlines()
+            score = lines[0].rstrip()
+            ticks = lines[1].rstrip()
+            pellets_remaining = lines[2].rstrip()
+            info_dict["score"] = score
+            info_dict["ticks"] = ticks
+            info_dict["pellets"] = pellets_remaining
+            lines = lines[3:]
+            while lines:
+                coords_line = lines[0].rstrip().split()
+                pellets_line = lines[1].rstrip().split()
+                power_pellets_line = lines[2].rstrip().split()
+                moves.append([coords_line, pellets_line, power_pellets_line])
+                lines = lines[3:]
+        return moves, info_dict
+
     def wait_manual_control(self):
         # blocks code until key is pressed
         while True:

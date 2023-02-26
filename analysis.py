@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import glob
 from simulator.gym_wrappers import PacBotEnv
 
 
@@ -18,6 +19,12 @@ class Analysis:
         self.total_calc_time = 0
 
         self.output_file = output_file if output_file else "output.txt"
+
+        self.moves = []
+
+        files = glob.glob(os.path.join("replay", "*"))
+        for f in files:
+            os.remove(f)
 
     def log_calc(self, elapsed_time):
         self.longest_calc_time = max(elapsed_time, self.longest_calc_time)
@@ -47,3 +54,44 @@ class Analysis:
             f.write(f"Num Calcs: {self.num_calcs}\n")
             f.write(f"Average Time: {self.total_calc_time / self.num_calcs}\n")
             f.write(f"Largest Time: {self.longest_calc_time}\n")
+
+    def reset(self):
+        self.moves = []
+
+    def log_replay(self, env: PacBotEnv, state):
+        curr_move = []
+        labels = ["pac", "r", "b", "o", "p"]
+        for label in labels:
+            curr_move.append(state[label][0])
+            curr_move.append(state[label][1])
+        curr_move.append(int(state["orientation"]))
+        curr_move.append(int(state["rf"]))
+        curr_move.append(int(state["bf"]))
+        curr_move.append(int(state["of"]))
+        curr_move.append(int(state["pf"]))
+
+        curr_move.append(env.game_state.state)
+        curr_move.append(env.game_state.lives)
+        self.moves.append(" ".join(str(move) for move in curr_move))
+        self.moves.append(
+            " ".join(f"{coord[0]} {coord[1]}" for coord in state["pellets"].tolist())
+        )
+        self.moves.append(
+            " ".join(
+                f"{coord[0]} {coord[1]}" for coord in state["power_pellets"].tolist()
+            )
+        )
+
+    def write_replay(self, env: PacBotEnv):
+        filepath = os.path.join("replay", "replay.txt")
+        Path("replay").mkdir(parents=True, exist_ok=True)
+        # contains score, time, and pellets remaining in that order
+        metadata = [
+            env.running_score,
+            env.ticks_passed,
+            env.game_state.pellets,
+        ]
+        with open(filepath, "w") as f:
+            for metric in metadata:
+                f.write(f"{metric}\n")
+            f.writelines(move + "\n" for move in self.moves)

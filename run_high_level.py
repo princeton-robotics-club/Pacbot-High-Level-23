@@ -50,6 +50,7 @@ if __name__ == "__main__":
 
     while key != pygame.K_q and trials < args.t:
         state = policy.get_state(env, obs, done, extra)
+        analysis.log_replay(env, state)
         pre = time.time()
         action = policy.get_action(state)
         analysis.log_calc(time.time() - pre)
@@ -60,6 +61,10 @@ if __name__ == "__main__":
         if done:
             analysis.log_endgame(env)
             trials += 1
+            # if not env.game_state._are_all_pellets_eaten():
+            analysis.write_replay(env)
+
+            analysis.reset()
             policy.reset()
             obs = env.reset()
             env.render()
