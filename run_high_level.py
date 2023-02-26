@@ -1,59 +1,30 @@
-import numpy as np
+from analysis import Analysis
 from simulator.gym_wrappers import PacBotEnv
 from simulator.visualizer import Visualizer
+from simulator.game_engine.variables import up, down, left
+from constants import UP, DOWN, LEFT, RIGHT
 from policies.high_level_policy import HighLevelPolicy
 import time
 import pygame
 import argparse
 
 
-def get_state(env: PacBotEnv, obs):
-    pellets = np.zeros((env.GRID_HEIGHT, env.GRID_WIDTH))
-    power_pellets = np.zeros((env.GRID_HEIGHT, env.GRID_WIDTH))
-    pellet_exists = obs[np.array(env.STATE_VALUES) == "pellet"]
-    for i in range(len(pellet_exists)):
-        if pellet_exists[i]:
-            pellets[env.PELLET_LOCATIONS == i + 1] = 1
-
-    power_pellet_exists = obs[np.array(env.STATE_VALUES) == "power_pellet"]
-    for i in range(len(power_pellet_exists)):
-        if power_pellet_exists[i]:
-            power_pellets[env.POWER_PELLET_LOCATIONS == i + 1] = 1
-    return {
-        "pellets": pellets,
-        "power_pellets": power_pellets,
-        "pac": (
-            int(obs[env.STATE_VALUES.index("pac_x")]),
-            int(obs[env.STATE_VALUES.index("pac_y")]),
-        ),
-        "r": (
-            int(obs[env.STATE_VALUES.index("r_x")]),
-            int(obs[env.STATE_VALUES.index("r_y")]),
-        ),
-        "b": (
-            int(obs[env.STATE_VALUES.index("b_x")]),
-            int(obs[env.STATE_VALUES.index("b_y")]),
-        ),
-        "o": (
-            int(obs[env.STATE_VALUES.index("o_x")]),
-            int(obs[env.STATE_VALUES.index("o_y")]),
-        ),
-        "p": (
-            int(obs[env.STATE_VALUES.index("p_x")]),
-            int(obs[env.STATE_VALUES.index("p_y")]),
-        ),
-        "rf": obs[env.STATE_VALUES.index("r_frightened")],
-        "bf": obs[env.STATE_VALUES.index("b_frightened")],
-        "of": obs[env.STATE_VALUES.index("o_frightened")],
-        "pf": obs[env.STATE_VALUES.index("p_frightened")],
-        "dt": obs[env.STATE_VALUES.index("frightened_timer")] / 2,
-        "orientation": obs[env.STATE_VALUES.index("orientation")],
-    }
+def convert_direction(direction):
+    if direction == up:
+        return RIGHT
+    if direction == down:
+        return LEFT
+    if direction == left:
+        return UP
+    return DOWN
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--s", help="Turn on slow mode", action="store_true")
+    parser.add_argument("--o", help="Output file name", type=str)
+    parser.add_argument("--t", help="Number of trials", type=int, default=5)
+    parser.add_argument("--d", help="Toggle debug", action="store_false")
     args = parser.parse_args()
 
     visualizer = Visualizer()
@@ -61,28 +32,43 @@ if __name__ == "__main__":
     obs = env.reset()
     grid = env.render()
     visualizer.draw_grid(grid, env.orientation)
-    policy = HighLevelPolicy()
+    policy = HighLevelPolicy(debug=args.d)
+    analysis = Analysis(args.o)
 
     done = False
     key = 0
     trials = 0
-    total_score = 0
-    while key != pygame.K_q:
-        state = get_state(env, obs)
+    extra = {"life_lost": False}
+    done = False
+
+    game_agents = [
+        env.game_state.red,
+        env.game_state.orange,
+        env.game_state.pink,
+        env.game_state.blue,
+    ]
+
+    while key != pygame.K_q and trials < args.t:
+        state = policy.get_state(env, obs, done, extra)
+        analysis.log_replay(env, state)
         pre = time.time()
         action = policy.get_action(state)
-        print(f"CALC TIME: {time.time() - pre}")
-        obs, reward, done, _ = env.step(action)
+        analysis.log_calc(time.time() - pre)
+        obs, reward, done, extra = env.step(action)
         grid = env.render()
         visualizer.draw_grid(grid, env.orientation)
 
         if done:
+            analysis.log_endgame(env)
             trials += 1
-            total_score += env.running_score
+            # if not env.game_state._are_all_pellets_eaten():
+            analysis.write_replay(env)
+
+            analysis.reset()
+            policy.reset()
             obs = env.reset()
             env.render()
         key = visualizer.wait_ai_control()
         if args.s:
             time.sleep(0.1)
-    print(f"Average score per run: {total_score / trials}")
-    print(f"Number of trials: {trials}")
+    analysis.write()
