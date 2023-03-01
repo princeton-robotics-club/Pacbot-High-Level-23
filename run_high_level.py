@@ -48,9 +48,11 @@ if __name__ == "__main__":
         env.game_state.blue,
     ]
 
+    worst_loss = float("-inf")
+
     while key != pygame.K_q and trials < args.t:
         state = policy.get_state(env, obs, done, extra)
-        analysis.log_replay(env, state, done or extra["life_lost"])
+        analysis.log_replay(env, state, extra["life_lost"])
         pre = time.time()
         action = policy.get_action(state)
         analysis.log_calc(time.time() - pre)
@@ -61,8 +63,10 @@ if __name__ == "__main__":
         if done:
             analysis.log_endgame(env)
             trials += 1
-            # if not env.game_state._are_all_pellets_eaten():
-            analysis.write_replay(env)
+            if not env.game_state._are_all_pellets_eaten():
+                if env.game_state.pellets > worst_loss:
+                    worst_loss = env.game_state.pellets
+                    analysis.write_replay(env)
 
             analysis.reset()
             policy.reset()
