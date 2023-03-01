@@ -58,21 +58,23 @@ class Analysis:
     def reset(self):
         self.moves = []
 
-    def log_replay(self, env: PacBotEnv, state):
+    def log_replay(self, env: PacBotEnv, state, just_died: bool):
         curr_move = []
         labels = ["pac", "r", "b", "o", "p"]
         for label in labels:
-            curr_move.append(state[label][0])
-            curr_move.append(state[label][1])
+            curr_move.append(int(state[label][0]))
+            curr_move.append(int(state[label][1]))
         curr_move.append(int(state["orientation"]))
         curr_move.append(int(state["rf"]))
         curr_move.append(int(state["bf"]))
         curr_move.append(int(state["of"]))
         curr_move.append(int(state["pf"]))
-
+        curr_move.append(int(just_died))
         curr_move.append(env.game_state.state)
         curr_move.append(env.game_state.lives)
         self.moves.append(" ".join(str(move) for move in curr_move))
+
+        # make new lines for pellet and power pellet locations
         self.moves.append(
             " ".join(f"{coord[0]} {coord[1]}" for coord in state["pellets"].tolist())
         )

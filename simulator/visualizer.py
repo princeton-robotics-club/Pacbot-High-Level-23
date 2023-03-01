@@ -13,11 +13,13 @@ class Visualizer(object):
         GRID_WIDTH = 33
         GRID_HEIGHT = 28
         pygame.init()
-        infoObj = pygame.display.Info()
-        screen_width, screen_height = infoObj.current_w, infoObj.current_h
+
         self.screen = pygame.display.set_mode(
-            (GRID_WIDTH * self.IMAGE_SIZE, GRID_HEIGHT * self.IMAGE_SIZE)
+            ((GRID_WIDTH + 8) * self.IMAGE_SIZE, GRID_HEIGHT * self.IMAGE_SIZE)
         )
+        self.maze_end = (GRID_WIDTH - 1) * self.IMAGE_SIZE
+        self.font = pygame.font.SysFont(None, 24)
+        self.state_mappings = {1: "Scatter", 2: "Chase", 3: "Frightened"}
         # screen = pygame.display.set_mode((screen_width, screen_height), HWSURFACE|DOUBLEBUF|RESIZABLE)
         # fake_screen = screen.copy()
         pacbot = pygame.transform.scale(
@@ -70,7 +72,7 @@ class Visualizer(object):
         self.angles = {UP: 90, LEFT: 180, RIGHT: 0, DOWN: 270}
         self.curr_angle = 90
 
-    def draw_grid(self, grid, orientation):
+    def draw_grid(self, grid, orientation, game_state=None, lives=None):
         self.screen.fill(((0, 0, 0)))
         pacbot = self.grid_legend["a"]
         angle_change = self.angles[orientation] - self.curr_angle
@@ -84,28 +86,15 @@ class Visualizer(object):
                     self.screen.blit(
                         tile, (cell * self.IMAGE_SIZE, row * self.IMAGE_SIZE)
                     )
-        # self.screen.blit(pygame.transform.scale(self.fake_screen, self.screen.get_rect().size), (0,0))
+        if game_state is not None:
+            img = self.font.render(
+                f"State: {self.state_mappings[game_state]}", True, (0, 0, 255)
+            )
+            self.screen.blit(img, (self.maze_end, 20))
+        if lives is not None:
+            img = self.font.render(f"Lives: {lives}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 40))
         pygame.display.update()
-
-    def draw_replay(self, filepath):
-        moves = []
-        info_dict = {}
-        with open(filepath, "r") as f:
-            lines = f.readlines()
-            score = lines[0].rstrip()
-            ticks = lines[1].rstrip()
-            pellets_remaining = lines[2].rstrip()
-            info_dict["score"] = score
-            info_dict["ticks"] = ticks
-            info_dict["pellets"] = pellets_remaining
-            lines = lines[3:]
-            while lines:
-                coords_line = lines[0].rstrip().split()
-                pellets_line = lines[1].rstrip().split()
-                power_pellets_line = lines[2].rstrip().split()
-                moves.append([coords_line, pellets_line, power_pellets_line])
-                lines = lines[3:]
-        return moves, info_dict
 
     def wait_manual_control(self):
         # blocks code until key is pressed

@@ -31,7 +31,7 @@ if __name__ == "__main__":
     env = PacBotEnv(speed=0.8)
     obs = env.reset()
     grid = env.render()
-    visualizer.draw_grid(grid, env.orientation)
+    visualizer.draw_grid(grid, env.orientation, env.game_state.state)
     policy = HighLevelPolicy(debug=args.d)
     analysis = Analysis(args.o)
 
@@ -50,13 +50,13 @@ if __name__ == "__main__":
 
     while key != pygame.K_q and trials < args.t:
         state = policy.get_state(env, obs, done, extra)
-        analysis.log_replay(env, state)
+        analysis.log_replay(env, state, done or extra["life_lost"])
         pre = time.time()
         action = policy.get_action(state)
         analysis.log_calc(time.time() - pre)
         obs, reward, done, extra = env.step(action)
         grid = env.render()
-        visualizer.draw_grid(grid, env.orientation)
+        visualizer.draw_grid(grid, env.orientation, env.game_state.state)
 
         if done:
             analysis.log_endgame(env)
