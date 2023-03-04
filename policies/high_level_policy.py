@@ -235,7 +235,7 @@ class HighLevelPolicy(Policy):
                     break
 
         # only chases frightened ghost if it's within certain distance
-        if closest_d is not None and closest_d <= state["dt"] * GHOST_MOVE_TICKS:
+        if closest_d is not None and closest_d <= state["dt"] * MOVE_TICKS:
             return self.get_action_from_path(closest_path)
 
         self.dPrint("phase: power pellets")
@@ -252,14 +252,7 @@ class HighLevelPolicy(Policy):
             path = self.astar_ghost(
                 obstacles, state["pac"], g_position, next_pos, state
             )
-            # TODO see if -2 is better since beginning and end node are included
-            # closest_ghost_dist = min(
-            #     closest_ghost_dist, path[-1].g if path else float("inf")
-            # )  # max(len(path) - 1, 0))
-            # if path:
-            #     print([node.position for node in path])
-            #     print(path[-1].g)
-            if not path or path[-1].g <= self.NT * MOVE_TICKS:
+            if not path or path[-1].g <= self.NT * GHOST_MOVE_TICKS:
                 nearby = True
                 # break
         self.dPrint(f"nearby:{nearby}")

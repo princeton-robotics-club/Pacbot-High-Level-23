@@ -31,7 +31,7 @@ if __name__ == "__main__":
     env = PacBotEnv(speed=0.5)
     obs = env.reset()
     grid = env.render()
-    visualizer.draw_grid(grid, env.orientation)
+    visualizer.draw_grid(grid, env.orientation, env.game_state.state)
     policy = HighLevelPolicy(debug=args.d)
     analysis = Analysis(args.o)
 
@@ -48,21 +48,25 @@ if __name__ == "__main__":
         env.game_state.blue,
     ]
 
+    worst_loss = float("-inf")
+
     while key != pygame.K_q and trials < args.t:
         state = policy.get_state(env, obs, done, extra)
-        analysis.log_replay(env, state)
+        analysis.log_replay(env, state, extra["life_lost"])
         pre = time.time()
         action = policy.get_action(state)
         analysis.log_calc(time.time() - pre)
         obs, reward, done, extra = env.step(action)
         grid = env.render()
-        visualizer.draw_grid(grid, env.orientation)
+        visualizer.draw_grid(grid, env.orientation, env.game_state.state)
 
         if done:
             analysis.log_endgame(env)
             trials += 1
-            # if not env.game_state._are_all_pellets_eaten():
-            analysis.write_replay(env)
+            if not env.game_state._are_all_pellets_eaten():
+                if env.game_state.pellets > worst_loss:
+                    worst_loss = env.game_state.pellets
+                    analysis.write_replay(env)
 
             analysis.reset()
             policy.reset()
