@@ -2,7 +2,7 @@ from simulator.visualizer import Visualizer
 from simulator.gym_wrappers import PacBotEnv
 import os
 import numpy as np
-from pygame import K_q, K_RIGHT, K_LEFT, K_SPACE, K_1, K_2, K_3
+from pygame import K_DOWN, K_q, K_RIGHT, K_LEFT, K_SPACE, K_1, K_2, K_3
 
 
 def draw_replay(filepath):
@@ -81,6 +81,8 @@ while key != K_q:
         current_frame += 1
     elif key == K_LEFT:
         current_frame -= 1
+    elif key == K_DOWN:
+        current_frame -= 5
     elif key == K_1:
         current_frame = death_checkpoints[0]
     elif key == K_2:

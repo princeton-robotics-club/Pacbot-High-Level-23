@@ -18,6 +18,9 @@ class Analysis:
         self.num_calcs = 0
         self.total_calc_time = 0
 
+        self.pellets_remaining = 0
+        self.worst_pellets_remaining = float("-inf")
+
         self.output_file = output_file if output_file else "output.txt"
 
         self.moves = []
@@ -40,6 +43,11 @@ class Analysis:
         self.longest_run = max(env.ticks_passed, self.longest_run)
         if env.game_state._are_all_pellets_eaten():
             self.wins += 1
+        else:
+            self.pellets_remaining += env.game_state.pellets
+            self.worst_pellets_remaining = max(
+                self.worst_pellets_remaining, env.game_state.pellets
+            )
 
     def write(self):
         filepath = os.path.join("output", self.output_file)
@@ -54,6 +62,11 @@ class Analysis:
             f.write(f"Num Calcs: {self.num_calcs}\n")
             f.write(f"Average Time: {self.total_calc_time / self.num_calcs}\n")
             f.write(f"Largest Time: {self.longest_calc_time}\n")
+            if self.wins != self.trials:
+                f.write(
+                    f"Average Pellets Remaining (Losses): {self.pellets_remaining / (self.trials - self.wins)}\n"
+                )
+                f.write(f"Most Pellets Remaining: {self.worst_pellets_remaining}")
 
     def reset(self):
         self.moves = []
