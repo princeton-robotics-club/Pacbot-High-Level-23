@@ -15,7 +15,7 @@ class Visualizer(object):
         pygame.init()
 
         self.screen = pygame.display.set_mode(
-            ((GRID_WIDTH + 8) * self.IMAGE_SIZE, GRID_HEIGHT * self.IMAGE_SIZE)
+            ((GRID_WIDTH + 20) * self.IMAGE_SIZE, GRID_HEIGHT * self.IMAGE_SIZE)
         )
         self.maze_end = (GRID_WIDTH - 1) * self.IMAGE_SIZE
         self.font = pygame.font.SysFont(None, 24)
@@ -72,7 +72,7 @@ class Visualizer(object):
         self.angles = {UP: 90, LEFT: 180, RIGHT: 0, DOWN: 270}
         self.curr_angle = 90
 
-    def draw_grid(self, grid, orientation, game_state=None, lives=None):
+    def draw_grid(self, grid, orientation, game_state=None, lives=None, next_moves=None):
         self.screen.fill(((0, 0, 0)))
         pacbot = self.grid_legend["a"]
         angle_change = self.angles[orientation] - self.curr_angle
@@ -94,6 +94,17 @@ class Visualizer(object):
         if lives is not None:
             img = self.font.render(f"Lives: {lives}", True, (0, 0, 255))
             self.screen.blit(img, (self.maze_end, 40))
+
+        if next_moves is not None:
+            img = self.font.render(f"Red Next: {next_moves[0]}, {next_moves[1]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 60))
+            img = self.font.render(f"Blue Next: {next_moves[2]}, {next_moves[3]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 80))
+            img = self.font.render(f"Orange Next: {next_moves[4]}, {next_moves[5]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 100))
+            img = self.font.render(f"Pink Next: {next_moves[6]}, {next_moves[7]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 120))
+
         pygame.display.update()
 
     def wait_manual_control(self):
