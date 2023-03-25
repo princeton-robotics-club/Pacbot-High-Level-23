@@ -243,6 +243,8 @@ class PacBotEnv(gym.Env):
         self.game_state.unpause()
         self.running_score = 0
         self.prev_reward = 0
+        self.orientation = 2
+        self.turn_time = 0
         self.prev_done = False
         self.prev_action = RIGHT
         self.num_lives = self.game_state.lives

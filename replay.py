@@ -52,12 +52,14 @@ for positions, pellets, power_pellets in moves:
             "f" if bool(float(positions[index + 10])) else ghost
         )
     orientation = int(float(positions[10]))
+    predicted_next_moves = [positions[-19], positions[-18], positions[-17], positions[-16], positions[-15], positions[-14], positions[-13], positions[-12]]
+    next_moves = [positions[-11], positions[-10], positions[-9], positions[-8], positions[-7], positions[-6], positions[-5], positions[-4]]
     just_died = bool(float(positions[-3]))
     state = int(positions[-2])
     lives = int(positions[-1])
     if just_died:
         death_checkpoints.append(len(grids) - 1)
-    grids.append((grid, orientation, state, lives))
+    grids.append((grid, orientation, state, lives, predicted_next_moves, next_moves))
 
 key = 0
 current_frame = 0
@@ -72,8 +74,8 @@ def clamp(frame_count):
 
 
 while key != K_q:
-    grid, orientation, game_state, lives = grids[current_frame]
-    visualizer.draw_grid(grid, orientation, game_state, lives)
+    grid, orientation, game_state, lives, predicted_next_moves, next_moves = grids[current_frame]
+    visualizer.draw_grid(grid, orientation, game_state, lives, predicted_next_moves, next_moves)
     key = visualizer.wait_manual_control()
     if key == K_SPACE:
         current_frame += 5
