@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     while key != pygame.K_q and trials < args.t:
         state = policy.get_state(env, obs, done, extra)
-        analysis.log_replay(env, state, extra["life_lost"])
+        analysis.log_replay(env, state, extra["life_lost"], policy)
         pre = time.time()
         action = policy.get_action(state)
         analysis.log_calc(time.time() - pre)

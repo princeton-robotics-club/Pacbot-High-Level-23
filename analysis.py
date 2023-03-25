@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import glob
+from policies.high_level_policy import HighLevelPolicy
 from simulator.gym_wrappers import PacBotEnv
 
 
@@ -71,7 +72,7 @@ class Analysis:
     def reset(self):
         self.moves = []
 
-    def log_replay(self, env: PacBotEnv, state, just_died: bool):
+    def log_replay(self, env: PacBotEnv, state, just_died: bool, policy: HighLevelPolicy):
         curr_move = []
         labels = ["pac", "r", "b", "o", "p"]
         for label in labels:
@@ -82,14 +83,17 @@ class Analysis:
         curr_move.append(int(state["bf"]))
         curr_move.append(int(state["of"]))
         curr_move.append(int(state["pf"]))
+        for ghost in policy.ghost_tracker.ghosts:
+            curr_move.append(ghost.next[0])
+            curr_move.append(ghost.next[1])
         curr_move.append(env.game_state.red.pos['next'][0])
         curr_move.append(env.game_state.red.pos['next'][1])
-        curr_move.append(env.game_state.blue.pos['next'][0])
-        curr_move.append(env.game_state.blue.pos['next'][1])
         curr_move.append(env.game_state.orange.pos['next'][0])
         curr_move.append(env.game_state.orange.pos['next'][1])
         curr_move.append(env.game_state.pink.pos['next'][0])
         curr_move.append(env.game_state.pink.pos['next'][1])
+        curr_move.append(env.game_state.blue.pos['next'][0])
+        curr_move.append(env.game_state.blue.pos['next'][1])
         curr_move.append(int(just_died))
         curr_move.append(env.game_state.state)
         curr_move.append(env.game_state.lives)
