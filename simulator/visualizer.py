@@ -13,11 +13,13 @@ class Visualizer(object):
         GRID_WIDTH = 33
         GRID_HEIGHT = 28
         pygame.init()
-        infoObj = pygame.display.Info()
-        screen_width, screen_height = infoObj.current_w, infoObj.current_h
+
         self.screen = pygame.display.set_mode(
-            (GRID_WIDTH * self.IMAGE_SIZE, GRID_HEIGHT * self.IMAGE_SIZE)
+            ((GRID_WIDTH + 20) * self.IMAGE_SIZE, GRID_HEIGHT * self.IMAGE_SIZE)
         )
+        self.maze_end = (GRID_WIDTH - 1) * self.IMAGE_SIZE
+        self.font = pygame.font.SysFont(None, 24)
+        self.state_mappings = {1: "Scatter", 2: "Chase", 3: "Frightened"}
         # screen = pygame.display.set_mode((screen_width, screen_height), HWSURFACE|DOUBLEBUF|RESIZABLE)
         # fake_screen = screen.copy()
         pacbot = pygame.transform.scale(
@@ -70,7 +72,7 @@ class Visualizer(object):
         self.angles = {UP: 90, LEFT: 180, RIGHT: 0, DOWN: 270}
         self.curr_angle = 90
 
-    def draw_grid(self, grid, orientation):
+    def draw_grid(self, grid, orientation, game_state=None, lives=None, predicted_next_moves=None, next_moves=None):
         self.screen.fill(((0, 0, 0)))
         pacbot = self.grid_legend["a"]
         angle_change = self.angles[orientation] - self.curr_angle
@@ -84,7 +86,35 @@ class Visualizer(object):
                     self.screen.blit(
                         tile, (cell * self.IMAGE_SIZE, row * self.IMAGE_SIZE)
                     )
-        # self.screen.blit(pygame.transform.scale(self.fake_screen, self.screen.get_rect().size), (0,0))
+        if game_state is not None:
+            img = self.font.render(
+                f"State: {self.state_mappings[game_state]}", True, (0, 0, 255)
+            )
+            self.screen.blit(img, (self.maze_end, 20))
+        if lives is not None:
+            img = self.font.render(f"Lives: {lives}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 40))
+
+        if predicted_next_moves is not None:
+            img = self.font.render(f"Predicted Red Next: {predicted_next_moves[0]}, {predicted_next_moves[1]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 80))
+            img = self.font.render(f"Predicted Orange Next: {predicted_next_moves[4]}, {predicted_next_moves[5]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 100))
+            img = self.font.render(f"Predicted Pink Next: {predicted_next_moves[6]}, {predicted_next_moves[7]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 120))
+            img = self.font.render(f"Predicted Blue Next: {predicted_next_moves[2]}, {predicted_next_moves[3]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 140))
+
+        if next_moves is not None:
+            img = self.font.render(f"Red Next: {next_moves[0]}, {next_moves[1]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 180))
+            img = self.font.render(f"Orange Next: {next_moves[4]}, {next_moves[5]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 200))
+            img = self.font.render(f"Pink Next: {next_moves[6]}, {next_moves[7]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 220))
+            img = self.font.render(f"Blue Next: {next_moves[2]}, {next_moves[3]}", True, (0, 0, 255))
+            self.screen.blit(img, (self.maze_end, 240))
+
         pygame.display.update()
 
     def wait_manual_control(self):

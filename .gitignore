@@ -3,3 +3,10 @@ output/
 *__pycache__
 *.zip
 */checkpoints/*
+replay/
+temp.py
+output*.txt
+robomodules/
+messages/
+env2
+*.pth
