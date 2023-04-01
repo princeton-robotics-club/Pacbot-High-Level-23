@@ -6,6 +6,64 @@ from algorithms.dijkstra import dijkstra
 from algorithms.ghost_logic import ghost_init_dict, edited_respawn_path
 from policies.policy import Policy
 
+def nextSteps(path, nearby):
+    # passes is the number of steps
+    passes=0
+    # basic array for return; these tuples are replaced with directions
+    directionReturn=[[0,0], [0,0]]
+    # boolean indicating if the first step is in x direction or not
+    isX = True
+    # if no change in x, moving in y, isX is False
+    if (len(path)>=3):
+        if (np.subtract(path[2],path[1])[0]==0):
+            isX=False
+    else:  
+        if (nearby):
+            directionReturn[0] = np.flip(np.subtract(path[1],path[0]))
+        return directionReturn
+    # starts at index 1
+    index=1
+    # Only looks at the next two steps
+    while(passes<2):
+        # If at the end of the provided steps, break
+        if(index+1==len(path)):
+            break
+        # initial "step"; will be changed appropriately and placed into return array
+        numSteps=[0,0]
+        # if in the y-direction
+        if (not isX):
+            # while the x-direction stays the same
+            while (np.subtract(path[index],path[index+1])[0]==0):
+                # subtract the next step from the current; this will be repeated for the whole step in the y-direction
+                numSteps+=np.subtract(path[index],path[index+1])
+                # increment current index
+                index=index+1
+                # check if at end of provided path; break if so
+                if(index+1==len(path)):
+                    break
+        # if in the x-direction
+        else:
+            # while the y-direction does not change (x stays the same)
+            while (np.subtract(path[index],path[index+1])[1]==0):
+                # tuple subtraction
+                numSteps+=np.subtract(path[index],path[index+1])
+                # increment index
+                index=index+1
+                # check if at end of path
+                if(index+1==len(path)):
+                    break
+        # index=index+1 - idk why I did this lol
+        numSteps = np.negative(numSteps)
+        numSteps[1] = -1*numSteps[1]
+        #directionReturn[passes] = (np.negative(numSteps))
+        directionReturn[passes] = numSteps
+        #directionReturn[passes] = (np.negative(numStep+*np.sign(numSteps)))
+        isX = not isX
+        passes=passes+1
+    #directionReturn[0] = directionReturn[0]-np.sign(directionReturn[0])
+    directionReturn[0] = np.flip(directionReturn[0])
+    directionReturn[1] = np.flip(directionReturn[1])
+    return directionReturn
 
 class Ghost:
     def __init__(self, init_dict) -> None:
