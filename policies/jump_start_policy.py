@@ -1,5 +1,5 @@
 from policies.policy import Policy
-from policies.high_level_policy import HighLevelPolicy
+from policies.high_level_policy import HighLevelPolicy, GhostPredict
 
 from constants import *
 
@@ -37,7 +37,8 @@ class JumpStartPolicy(Policy):
             self.start_path.append(DOWN)
         self.curr_action = 0
         self.still_on_start = True
-        self.alt_policy = HighLevelPolicy(debug=debug)
+        self.ghost_tracker = GhostPredict(False, debug)
+        self.alt_policy = HighLevelPolicy(debug=debug, ghost_tracker=self.ghost_tracker)
 
     def reset(self):
         self.curr_action = 0
@@ -45,7 +46,9 @@ class JumpStartPolicy(Policy):
 
     def get_action(self, state):
         if self.still_on_start:
+            self.ghost_tracker.step()
             action = self.start_path[self.curr_action]
+            self.ghost_tracker.prev_move = action
             self.curr_action += 1
             if self.curr_action == len(self.start_path):
                 self.still_on_start = False
