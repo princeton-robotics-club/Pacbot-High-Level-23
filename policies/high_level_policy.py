@@ -159,14 +159,33 @@ class HighLevelPolicy(Policy):
         for index, action in enumerate(self.ACTIONS):
             if action == movement:
                 self.ghost_tracker.prev_move = index
-                return index
+                move_dist = 1
+                for i in range(2, len(path)):
+                    if (
+                        tuple(np.subtract(path[i].position, path[i - 1].position))
+                        == action
+                    ):
+                        move_dist += 1
+                    else:
+                        # Makes pacbot not stop at intersection
+                        # does not account for cases where the destination is the intersection
+                        move_dist -= 1
+                        break
+                return (index, move_dist)
         # assume that a turn happened
         if len(path) < 3:
             return STAY
         movement = tuple(np.subtract(path[2], path[1]))
         for index, action in enumerate(self.ACTIONS):
             if action == movement:
-                return index + 4
+                move_dist = 1
+                for i in range(3, len(path)):
+                    if (
+                        tuple(np.subtract(path[i].position, path[i - 1].position))
+                        == action
+                    ):
+                        move_dist += 1
+                return (index, move_dist)
         self.dPrint("ERROR: DOUBLE TURN")
         return STAY
 
