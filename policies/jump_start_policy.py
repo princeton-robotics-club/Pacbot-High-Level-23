@@ -8,6 +8,8 @@ class JumpStartPolicy(Policy):
     def __init__(self, debug=True) -> None:
         super().__init__(debug)
 
+        self.last_pos = (14, 7)
+
         self.start_path = [
             UP,
             UP,
@@ -43,6 +45,21 @@ class JumpStartPolicy(Policy):
     def reset(self):
         self.curr_action = 0
         self.still_on_start = True
+
+
+    def should_move_on(self, state):
+
+        x, y  = state["pac"]
+        if self.start_path[self.curr_action]== UP and self.last_pos[0] == x - 1 and self.last_pos[1] == y:
+            return True
+        elif self.start_path[self.curr_action] == LEFT and self.last_pos[0] == x and self.last_pos[1] == y - 1:
+            return True
+        elif self.start_path[self.curr_action] == RIGHT and self.last_pos[0] == x and self.last_pos[1] == y + 1:
+            return True
+        elif self.start_path[self.curr_action] == DOWN and self.last_pos[0] == x + 1 and self.last_pos[1] == y:
+            return True
+        return False
+
 
     def get_action(self, state):
         if self.still_on_start:

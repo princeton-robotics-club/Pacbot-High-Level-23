@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/Users/ernestmccarter/Documents/Princeton/Robotics/Pacbot/Spring23/Pacbot-Comms-23/src/decisionModule/Pacbot_High_Level")
+
 from typing import Callable
 import numpy as np
 from constants import STAY, MOVE_TICKS, GHOST_MOVE_TICKS, UP
@@ -154,8 +157,8 @@ class HighLevelPolicy(Policy):
     def get_action_from_path(self, path):
         if len(path) < 2:
             return STAY
-        path = [path[i].position for i in range(min(3, len(path)))]
-        movement = tuple(np.subtract(path[1], path[0]))
+        shortened_path = [path[i].position for i in range(min(3, len(path)))]
+        movement = tuple(np.subtract(shortened_path[1], shortened_path[0]))
         for index, action in enumerate(self.ACTIONS):
             if action == movement:
                 self.ghost_tracker.prev_move = index
@@ -174,8 +177,8 @@ class HighLevelPolicy(Policy):
                 return (index, move_dist)
         # assume that a turn happened
         if len(path) < 3:
-            return STAY
-        movement = tuple(np.subtract(path[2], path[1]))
+            return (STAY, 0)
+        movement = tuple(np.subtract(shortened_path[2], shortened_path[1]))
         for index, action in enumerate(self.ACTIONS):
             if action == movement:
                 move_dist = 1
@@ -187,7 +190,7 @@ class HighLevelPolicy(Policy):
                         move_dist += 1
                 return (index, move_dist)
         self.dPrint("ERROR: DOUBLE TURN")
-        return STAY
+        return (STAY, 0)
 
     # state is a dict with keys:
     #    pellets:       height x width
@@ -311,7 +314,7 @@ class HighLevelPolicy(Policy):
         self.dPrint("phase: pellets")
         # target the closest pellet not on pac
         # move to it if it exists
-        state["pellets"] = set(tuple(coord) for coord in state["pellets"].tolist())
+        state["pellets"] = set(tuple(coord) for coord in list(state["pellets"]))
         closest_path = dijkstra(obstacles, state["pac"], state)
         if closest_path:
             return self.get_action_from_path(closest_path)
