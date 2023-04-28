@@ -12,24 +12,6 @@ class DijkstraPolicy(Policy):
         super().__init__(debug)
         self.curr_target = None
 
-    def get_action_from_path(self, path):
-        if len(path) < 2:
-            return STAY
-        path = [path[i].position for i in range(min(3, len(path)))]
-        movement = tuple(np.subtract(path[1], path[0]))
-        for index, action in enumerate(self.ACTIONS):
-            if action == movement:
-                return index
-        # assume that a turn happened
-        if len(path) < 3:
-            return STAY
-        movement = tuple(np.subtract(path[2], path[1]))
-        for index, action in enumerate(self.ACTIONS):
-            if action == movement:
-                return index + 4
-        self.dPrint("ERROR: DOUBLE TURN")
-        return STAY
-
     def get_action(self, state):
         obstacles = self.WALLS.copy()
         # consider ghosts which are not frightened to be obstacles
@@ -42,23 +24,23 @@ class DijkstraPolicy(Policy):
         if not state["pf"]:
             obstacles[state["p"]] = True
 
-        positions = np.concatenate((state["pellets"], state["power_pellets"]))
+        positions = state["pellets"].union(state["power_pellets"]) #np.concatenate((list(state["pellets"]), list(state["power_pellets"])))
 
-        coords = [tuple(coord) for coord in positions.tolist()]
-        state["pellets"] = set(coords)
+        # coords = [tuple(coord) for coord in positions.tolist()]
+        # state["pellets"] = set(coords)
         # coords = list(state["pellets"])
 
-        if self.curr_target not in state["pellets"]:
+        if self.curr_target not in positions:
             closest_path = dijkstra(obstacles, state["pac"], state, 20)
             if closest_path:
                 return self.get_action_from_path(closest_path)
             self.dPrint("dijkstra returned")
-            if len(coords) > 0:
-                print(coords)
-                self.curr_target = choice(coords)
+            if len(positions) > 0:
+                # print(coords)
+                self.curr_target = choice(positions)
             else:
                 self.dPrint("no coords")
-                return STAY
+                return STAY, 0
         self.dPrint(self.curr_target)
         path = astar(obstacles, state["pac"], self.curr_target, state)
         return self.get_action_from_path(path)

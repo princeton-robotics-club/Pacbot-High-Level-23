@@ -6,11 +6,11 @@ from .node import Node
 # import sys
 
 # sys.path.append("../")
-from constants import TURN_TICKS, MOVE_TICKS, UP
+from constants import TURN_TICKS, MOVE_TICKS, UP, GHOST_MOVE_TICKS
 from typing import List, Tuple
 
 
-def astar(maze, start, end, state, heuristic=None):
+def astar(maze, start, end, state, heuristic=None, is_ghost=False):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
 
     start = tuple(start)
@@ -96,11 +96,15 @@ def astar(maze, start, end, state, heuristic=None):
                 continue
 
             # Create the f, g, and h values
-            child.g = current_node.g + (
-                MOVE_TICKS
-                if child.pacbot_orientation % 2 == curr_orientation
-                else TURN_TICKS
-            )
+            if is_ghost:
+                child.g = current_node.g + (GHOST_MOVE_TICKS if child.pacbot_orientation % 2 == curr_orientation else 0)
+            else:
+                child.g = current_node.g + (
+                    MOVE_TICKS
+                    if child.pacbot_orientation % 2 == curr_orientation
+                    else TURN_TICKS
+                )
+
             child.h = ((child.position[0] - end_node.position[0]) ** 2) + (
                 (child.position[1] - end_node.position[1]) ** 2
             )

@@ -1,5 +1,6 @@
 from heapq import heappush, heappop, heapify
 from typing import List, Tuple
+
 from .node import Node
 
 # FOR TESTING
@@ -10,13 +11,27 @@ from .node import Node
 from constants import TURN_TICKS, MOVE_TICKS
 
 
+class DijkstraNode(Node):
+    def __init__(self, parent=None, position=None, orientation=None, pellets=0):
+        super().__init__(parent, position, orientation)
+        self.pellets = pellets
+    
+    def __eq__(self, other):
+        return super().__eq__(other) and self.pellets == other.pellets
+
+    def __lt__(self, other: Node):
+        if self.pellets == other.pellets:
+            return super().__lt__(other)
+        return self.pellets < other.pellets
+
+
 def dijkstra(maze, start, state, max_iters=-1):
     start = tuple(start)
 
     pellets = state["pellets"]
 
     # Create start and end node
-    start_node = Node(None, start, state["orientation"])
+    start_node = DijkstraNode(None, start, state["orientation"])
     start_node.g = 0
 
     # Initialize both open and closed list
@@ -26,6 +41,8 @@ def dijkstra(maze, start, state, max_iters=-1):
     # Add the start node
     open_list.append((start_node.g, start_node))
 
+    champ_node = start_node
+    
     iterations = 0
     # Loop until you find the end
     while len(open_list) > 0:
@@ -36,17 +53,15 @@ def dijkstra(maze, start, state, max_iters=-1):
 
         # found nearest neighbor
         if current_node.position in pellets:
-            path = []
-            current = current_node
-            while current is not None:
-                path.append(current)
-                current = current.parent
-            return path[::-1]
-
-        if iterations == max_iters:
-            return []
-
-        iterations += 1
+            current_node.pellets += 1
+        if current_node.pellets >= champ_node.pellets:
+            champ_node = current_node
+            # path = []
+            # current = current_node
+            # while current is not None:
+            #     path.append(current)
+            #     current = current.parent
+            # return path[::-1]
 
         # Generate children
         children: List[Node] = []
@@ -78,15 +93,16 @@ def dijkstra(maze, start, state, max_iters=-1):
             new_node = None
             # Create new node
             if curr_orientation == direction % 2:
-                new_node = Node(
+                new_node = DijkstraNode(
                     current_node, node_position, current_node.pacbot_orientation
                 )
             elif not turned:
-                new_node = Node(current_node, current_node.position, direction)
+                new_node = DijkstraNode(current_node, current_node.position, direction)
                 turned = True
 
             # Append
             if new_node:
+                new_node.pellets = current_node.pellets
                 children.append(new_node)
 
         # Loop through children
@@ -121,8 +137,18 @@ def dijkstra(maze, start, state, max_iters=-1):
 
             if on:
                 open_list.pop(champ)
-
+        
             heapify(open_list)
             # Add the child to the open list
             heappush(open_list, (child.g, child))
-    return []
+
+        if iterations == max_iters:
+            break
+
+        iterations += 1
+    path = []
+    current = champ_node
+    while current is not None:
+        path.append(current)
+        current = current.parent
+    return path[::-1]

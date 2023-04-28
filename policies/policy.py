@@ -1,6 +1,7 @@
 import numpy as np
 from simulator.game_engine.grid import grid
 from simulator.game_engine.variables import *
+from constants import STAY
 
 
 class Policy:
@@ -79,3 +80,50 @@ class Policy:
             "orientation": obs[env.STATE_VALUES.index("orientation")],
             "life_lost": extra["life_lost"] or done,
         }
+
+    def get_action_from_path(self, path, power_pellet=None, chase=False):
+        if len(path) < 2:
+            return STAY, 0
+        shortened_path = [path[i].position for i in range(min(3, len(path)))]
+        movement = tuple(np.subtract(shortened_path[1], shortened_path[0]))
+        for index, action in enumerate(self.ACTIONS):
+            if action == movement:
+                self.ghost_tracker.prev_move = index
+                move_dist = 1
+                for i in range(2, len(path)):
+                    if (
+                        tuple(np.subtract(path[i].position, path[i - 1].position))
+                        == action
+                    ):
+                        if path[i].position == power_pellet:
+                            break
+                        move_dist += 1
+                        if chase and path[i] == path[-1]:
+                            move_dist += 3
+                    else:
+                        # Makes pacbot not stop at intersection
+                        # does not account for cases where the destination is the intersection
+                        if move_dist > 1:
+                            move_dist -= 1
+                        break
+                return (index, move_dist)
+        # assume that a turn happened
+        if len(path) < 3:
+            return (STAY, 0)
+        movement = tuple(np.subtract(shortened_path[2], shortened_path[1]))
+        for index, action in enumerate(self.ACTIONS):
+            if action == movement:
+                move_dist = 1
+                for i in range(3, len(path)):
+                    if (
+                        tuple(np.subtract(path[i].position, path[i - 1].position))
+                        == action
+                    ):
+                        move_dist += 1
+                    else:
+                        if move_dist > 1:
+                            move_dist -= 1
+                        break
+                return (index, move_dist)
+        self.dPrint("ERROR: DOUBLE TURN")
+        return (STAY, 0)
